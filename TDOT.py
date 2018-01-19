@@ -204,7 +204,7 @@ def ticker():
     d = 60.0 - t.second();
     c = 1;
     while True:
-        yield from asyncio.sleep(d);
+        yield from asyncio.sleep(float(d));
         print("Elapsed time: (" + str(c) + ")");
         c += 1;
         d = 60.0;
