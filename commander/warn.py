@@ -88,33 +88,33 @@ class warn(object):
     def ticker(self, client, data):
         print("Executed!")
         for server in data.servers:
-            print("1")
+            #print("1")
             if 'warnings' in data.servers[server].customData:
-                print("2")
+                #print("2")
                 w = data.servers[server].customData['warnings'];
-                print("3")
+                #print("3")
                 if len(w) > 0:
-                    print("4")
+                    #print("4")
                     for user in w:
-                        print("5")
+                        #print("5")
                         nWarnings = [];
-                        print("6")
+                        #print("6")
                         if len(w[user]) > 0:
-                            print("7")
+                            #print("7")
                             for entry in w[user]:
-                                print("8")
+                                #print("8")
                                 date = datetime.datetime.strptime(entry['date'], '%Y-%m-%d %H:%M:%S.%f');
-                                print("9")
+                                #print("9")
                                 curDate = datetime.datetime.now();
-                                print("10")
+                                #print("10")
                                 diff = (date.year - curDate.year) * 12 + date.month - curDate.month;
-                                print("11")
+                                #print("11")
                                 if diff < 3:
-                                    print("12")
+                                    #print("12")
                                     nWarnings.append(warning);
-                                    print("13")
+                                    #print("13")
                             w[user] = nWarnings;
-                            print("14")
+                            #print("14")
                             
     @asyncio.coroutine
     def execute(self, client, msg, data, args):

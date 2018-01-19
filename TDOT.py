@@ -216,6 +216,11 @@ def ticker():
             print("Elapsed time counter max reached. Resetting to 0.");
         for cmd in d.tickEvents:
             yield from d.cmd.tick(client, d, cmd);
+            
+@asyncio.coroutine
+def on_reaction_add(reaction, user):
+    for cmd in d.reactEvents:
+        yield from d.cmd.react(client, reaction, user, data, cmd);
 
 log = logging.getLogger('discord');
 log.setLevel(logging.ERROR);

@@ -41,3 +41,9 @@ class commandes(object):
         print(data.cmds[cmd]);
         executer = data.cmds[cmd]();
         yield from executer.ticker(client, data);
+        
+    @asyncio.coroutine
+    def react(self, client, reaction, user, data, cmd):
+        print(data.cmds[cmd]);
+        executer = data.cmds[cmd]();
+        yield from executer.reactor(client, reaction, user, data);

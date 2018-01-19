@@ -9,8 +9,8 @@ class cookie(object):
         self.Owner = False;
         self.bOwner = False;
         self.name = 'cookie';
-        self.tick = False;
-        self.react = False;
+        self.tick = True;
+        self.react = True;
         self.commands = {
             'help':
                 'Displays how to use a specific command.\n' +
@@ -79,6 +79,14 @@ class cookie(object):
             #yield from data.messager(msg, [['', self.error(data, msg), msg.channel]]);
         return use
 
+        
+    @asyncio.coroutine
+    def ticker(self, client, data):
+        pass
+        
+    @asyncio.coroutine
+    def reactor(self, client, reaction, user, data):
+        pass
 
     @asyncio.coroutine
     def execute(self, client, msg, data, args):
