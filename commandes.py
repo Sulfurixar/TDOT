@@ -23,7 +23,7 @@ class commandes(object):
     def getEvents(self):
         ticks = {};
         reacts = {};
-        for cmd in self.commands():
+        for cmd in self.commands:
             if self.commands[cmd].tick:
                 ticks.update({cmd: self.commands[cmd]});
             if self.commands[cmd].react:
