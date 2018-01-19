@@ -220,7 +220,6 @@ def ticker():
 @client.event      
 @asyncio.coroutine
 def on_reaction_add(reaction, user):
-    print("react");
     for cmd in d.reactEvents:
         yield from d.cmd.react(client, reaction, user, d, cmd);
 
