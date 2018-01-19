@@ -201,7 +201,7 @@ def messager(msg, text='', embed=discord.Embed.Empty):
 @asyncio.coroutine
 def ticker():
     t = datetime.datetime.now();
-    d = 60.0 - t.second();
+    d = 60.0 - t.second;
     c = 1;
     while True:
         yield from asyncio.sleep(float(d));
