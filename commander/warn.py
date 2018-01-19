@@ -10,6 +10,8 @@ class warn(object):
         self.Owner = False;
         self.bOwner = False;
         self.name = 'warn';
+        self.tick = True;
+        self.react = False;
         self.commands = {
             'help':
                 'Displays how to use a specific command.\n' +
@@ -81,7 +83,24 @@ class warn(object):
             #yield from data.messager(msg, [['', self.error(data, msg), msg.channel]]);
         return use
 
-
+        
+    @asyncio.coroutine
+    def tick(self, client, data):
+        for server in data.servers:
+            if 'warnings' in data.servers[server].customData:
+                w = data.servers[server].customData['warnings'];
+                if len(w) > 0:
+                    for user in w:
+                        nWarnings = [];
+                        if len(w[user]) > 0:
+                            for entry in w[user]:
+                                date = datetime.datetime.strptime(entry['date'], '%Y-%m-%d %H:%M:%S.%f');
+                                curDate = datetime.datetime.now();
+                                diff = (date.year - curDate.year) * 12 + date.month - curDate.month;
+                                if diff < 3:
+                                    nWarnings.append(warning);
+                            w[user] = nWarnings;
+                            
     @asyncio.coroutine
     def execute(self, client, msg, data, args):
         if not self.can_use(data, msg):

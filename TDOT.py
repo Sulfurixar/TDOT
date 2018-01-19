@@ -22,6 +22,7 @@ class data(object):
         self.perms = checkPermissions(client);
         self.cmd = commandes();
         self.cmds = self.cmd.commands;
+        self.tickEvents, self.reactEvents = self.cmd.getEvents();
         self.answers = {};
         self.servers = {};
         self.messages = {}; #{authorID: [msg, msg, msg]} //allows for multiple inquiries per single command, also allows to delete them at the same time.
@@ -200,14 +201,18 @@ def messager(msg, text='', embed=discord.Embed.Empty):
 
 @asyncio.coroutine
 def ticker():
-    t = datetime.datetime.now();
-    d = 60.0 - t.second;
     c = 1;
     while True:
+        d = 60.0 - datetime.datetime.now().second;
         yield from asyncio.sleep(float(d));
         print("Elapsed time: (" + str(c) + ")");
-        c += 1;
-        d = 60.0;
+        try:
+            c += 1;
+        except:
+            c = 0;
+            print("Elapsed time counter max reached. Resetting to 0.");
+        for cmd in d.tickEvents:
+            yield from d.cmd.tick(client, d, cmd);
 
 log = logging.getLogger('discord');
 log.setLevel(logging.ERROR);

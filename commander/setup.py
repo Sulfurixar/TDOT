@@ -11,6 +11,8 @@ class setup(object):
         self.Owner = True;
         self.bOwner = False;
         self.name = 'setup';
+        self.tick = False;
+        self.react = False;
         self.commands = {
             'help':
                 'Displays how to use a specific command.\n' +

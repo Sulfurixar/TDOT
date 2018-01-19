@@ -20,8 +20,24 @@ class commandes(object):
                 self.commands.update({name: executor});
         return
 
+    def getEvents(self):
+        ticks = {};
+        reacts = {};
+        for cmd in self.commands():
+            if self.commands[cmd].tick:
+                ticks.update({cmd: self.commands[cmd]});
+            if self.commands[cmd].react:
+                reacts.update({cmd: self.commands[cmd]});
+        return ticks, reacts
+        
     @asyncio.coroutine
     def execute(self, client, msg, data, args, cmd):
         print(data.cmds[cmd]);
         executer = data.cmds[cmd]();
         yield from executer.execute(client, msg, data, args)
+
+    @asyncio.coroutine
+    def tick(self, client, data, cmd):
+        print(data.cmds[cmd]);
+        executer = data.cmds[cmd]();
+        yield from executer.tick(client, data);

@@ -9,6 +9,8 @@ class help(object):
         self.Owner = False;
         self.bOwner = False;
         self.name = 'help';
+        self.tick = False;
+        self.react = False;
         self.commands = {
             'help':
                 'Displays how to use a specific command.\n' +

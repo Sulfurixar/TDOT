@@ -14,6 +14,8 @@ class update(object):
         self.Owner = True;
         self.bOwner = True;
         self.name = 'update';
+        self.tick = False;
+        self.react = False;
         self.commands = {
             'help':
                 'Displays how to use a specific command.\n' +

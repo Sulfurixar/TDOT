@@ -11,6 +11,8 @@ class vote(object):
         self.Owner = False;
         self.bOwner = False;
         self.name = 'vote';
+        self.tick = False;
+        self.react = False;
         self.commands = {
             'help':
                 'Displays how to use a specific command.\n' +

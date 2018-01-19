@@ -9,6 +9,8 @@ class version(object):
         self.Owner = False;
         self.bOwner = False;
         self.name = 'version';
+        self.tick = False;
+        self.react = False;
         self.commands = {
             'help':
                 'Displays how to use a specific command.\n' +
