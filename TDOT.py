@@ -203,8 +203,8 @@ def messager(msg, text='', embed=discord.Embed.Empty):
 def ticker():
     c = 1;
     while True:
-        d = 60.0 - datetime.datetime.now().second;
-        yield from asyncio.sleep(float(d));
+        t = 60.0 - datetime.datetime.now().second;
+        yield from asyncio.sleep(float(t));
         print("Elapsed time: (" + str(c) + ")");
         try:
             c += 1;
