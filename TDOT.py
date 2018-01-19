@@ -216,7 +216,8 @@ def ticker():
             print("Elapsed time counter max reached. Resetting to 1.");
         for cmd in d.tickEvents:
             yield from d.cmd.tick(client, d, cmd);
-            
+      
+@client.event      
 @asyncio.coroutine
 def on_reaction_add(reaction, user):
     print("react");
