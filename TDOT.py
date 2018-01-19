@@ -222,7 +222,7 @@ def ticker():
 def on_reaction_add(reaction, user):
     print("react");
     for cmd in d.reactEvents:
-        yield from d.cmd.react(client, reaction, user, data, cmd);
+        yield from d.cmd.react(client, reaction, user, d, cmd);
 
 log = logging.getLogger('discord');
 log.setLevel(logging.ERROR);
