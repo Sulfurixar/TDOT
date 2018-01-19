@@ -40,4 +40,4 @@ class commandes(object):
     def tick(self, client, data, cmd):
         print(data.cmds[cmd]);
         executer = data.cmds[cmd]();
-        #yield from executer.tick(client, data);
+        yield from executer.ticker(client, data);

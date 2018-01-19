@@ -85,7 +85,7 @@ class warn(object):
 
         
     @asyncio.coroutine
-    def tick(self, client, data):
+    def ticker(self, client, data):
         print("Executed!")
         for server in data.servers:
             print("1")
