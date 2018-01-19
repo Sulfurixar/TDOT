@@ -104,6 +104,15 @@ class update(object):
                 executor = getattr(a, name);
                 commands.update({name: executor});
         data.cmds = commands;
+        te = {};
+        re = {};
+        for cmd in data.cmds:
+            if data.cmds[cmd]().tick:
+                te.update({cmd: data.cmds[cmd]});
+            if data.cmds[cmd]().react:
+                re.update({cmd: data.cmds[cmd]});
+        data.tickEvents = te;
+        data.reactEvents = re;
         print(data.cmds);
         m = __import__('checkPermissions');
         del sys.modules['checkPermissions']

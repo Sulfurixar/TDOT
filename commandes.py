@@ -24,9 +24,9 @@ class commandes(object):
         ticks = {};
         reacts = {};
         for cmd in self.commands:
-            if self.commands[cmd].tick:
+            if self.commands[cmd]().tick:
                 ticks.update({cmd: self.commands[cmd]});
-            if self.commands[cmd].react:
+            if self.commands[cmd]().react:
                 reacts.update({cmd: self.commands[cmd]});
         return ticks, reacts
         

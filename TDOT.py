@@ -201,18 +201,21 @@ def messager(msg, text='', embed=discord.Embed.Empty):
 
 @asyncio.coroutine
 def ticker():
-    c = 1;
+    c = 0;
     while True:
-        t = 60.0 - datetime.datetime.now().second;
-        yield from asyncio.sleep(float(t));
-        print("Elapsed time: (" + str(c) + ")");
-        try:
-            c += 1;
-        except:
-            c = 0;
-            print("Elapsed time counter max reached. Resetting to 0.");
-        for cmd in d.tickEvents:
-            yield from d.cmd.tick(client, d, cmd);
+        if c != 0:
+            t = 60.0 - datetime.datetime.now().second;
+            yield from asyncio.sleep(float(t));
+            print("Elapsed time: (" + str(c) + ")");
+            try:
+                c += 1;
+            except:
+                c = 0;
+                print("Elapsed time counter max reached. Resetting to 0.");
+            for cmd in d.tickEvents:
+                yield from d.cmd.tick(client, d, cmd);
+        else:
+            c = 1;
 
 log = logging.getLogger('discord');
 log.setLevel(logging.ERROR);
