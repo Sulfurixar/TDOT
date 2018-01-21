@@ -15,7 +15,11 @@ class cookie(object):
             'help':
                 'Displays how to use a specific command.\n' +
                 'How to use this command: ``e!cookie help (args)``\n' +
-                'For Example: ``e!cookie help help`` - shows this message.'
+                'For Example: ``e!cookie help help`` - shows this message.',
+            'setcookie':
+                'Sets the default cookie into the specified emoji.\n' +
+                'How to use this command: ``e!cookie setcookie (args)``\n' +
+                'For Example: ``e!cookie setcookie :cookie:`` - sets the default cookie into a cookie.'
         };
         return super().__init__();
 
