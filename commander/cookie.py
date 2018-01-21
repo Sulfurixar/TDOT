@@ -125,6 +125,11 @@ class cookie(object):
                             help = data.help(msg, self);
                         for h in help:
                             results.append(h);
+                    ########################################################
+                    if arg.lower() == 'setcookie':
+                        skip = 1;
+                        c = args[argpos + 1];
+                        print(c);
 #############################################################################
                 argpos += 1;
             yield from data.messager(msg, results);

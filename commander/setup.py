@@ -402,9 +402,9 @@ class setup(object):
                                     results.append(['', data.embedder([['**Error:**', 'Could not find specified role: ``' + role + ':' + emb[role]]]), msg.channel]);
                                 else:
                                     roles[r.name] = r.id;
-                            print(str(data.servers[msg.server.id].authRoles));
+                            #print(str(data.servers[msg.server.id].authRoles));
                             data.servers[msg.server.id].authRoles = roles;
-                            print(str(data.servers[msg.server.id].authRoles));
+                            #print(str(data.servers[msg.server.id].authRoles));
                             data.servers[msg.server.id].update(client);
                             results.append(['', data.embedder([['**Set giveroles to:**', '``' + str(roles) + '``']]), msg.channel]);
                         else:

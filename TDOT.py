@@ -309,6 +309,14 @@ def on_message_delete(msg):
                                     return;
                         embed = d.embedder([['**Detected message deletion:**', 'Deleted message owned by: <@' + msg.author.id + '> '+ msg.author.display_name + ':' + msg.author.id + '\nContents: \'' + msg.content + '\'\nTime: ' + str(datetime.datetime.now()) + '\nChannel: ``' + msg.channel.name + ":" + msg.channel.id + "``"]]);
                         yield from client.send_message(s.deleteChannel[2], '_   _', embed=embed);
+                        if len(msg.embeds) > 0:
+                            yield from client.send_message(s.deleteChannel[2], "It had embed(s) with it:");
+                            for embed in msg.embeds:
+                                yield from client.send_message(s.deleteChannel[2], embed=embed);
+                        if len(msg.attachments) > 0:
+                            yield from client.send_message(s.deleteChannel[2], "It had attachment(s) with it:");
+                                for attachment in msg.attachments:
+                                    yield from client.send_message(s.deleteChannel[2], attachment);
 
 @client.event
 @asyncio.coroutine
