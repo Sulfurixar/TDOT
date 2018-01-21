@@ -110,7 +110,7 @@ class access(object):
                 else:
                     if arg.lower() not in self.commands:
                         if arg.lower() in data.servers[msg.server.id].customData['access']:
-                            aArg = aType in data.servers[msg.server.id].customData['access'][arg.lower()];
+                            aArg = data.servers[msg.server.id].customData['access'][arg.lower()];
                             for aType in aArg:
                                 if aType == 'role':
                                     r = discord.utils.find(lambda m: m.id == aArg[aType], msg.server.roles);

@@ -88,7 +88,13 @@ class ping(object):
             return;
 
         if len(args) == 0:
-            yield from data.messager(msg, data.help(msg, self));
+            t1 = datetime.datetime.now();
+            m1 = yield from client.send_message(msg.channel, 'Pong! ``' + t1.strftime("%Y-%m-%d %H:%M:%S") + '``');
+            yield from client.delete_message(m1);
+            t2 = datetime.datetime.now();
+            pt = t2 - t1;
+            ms = (pt.seconds*1000 + pt.microseconds/1000)/2;
+            results.append(['',data.embedder([['**Ping results:**','Mean average connection speed: ``' + str(ms) + 'ms``.']]), msg.channel]);
             return;
         else:
             results = [];
@@ -107,7 +113,7 @@ class ping(object):
                         t2 = datetime.datetime.now();
                         pt = t2 - t1;
                         ms = (pt.seconds*1000 + pt.microseconds/1000)/2;
-                        results.append(['',data.embedder([['**Ping results:**','Mean average connection speed: ``' + str(ms) + '``.']]), msg.channel]);
+                        results.append(['',data.embedder([['**Ping results:**','Mean average connection speed: ``' + str(ms) + 'ms``.']]), msg.channel]);
                         argpos += 1;
                         continue;
 #############################################################################
