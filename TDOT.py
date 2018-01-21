@@ -10,6 +10,7 @@ from checkPermissions import checkPermissions
 from concurrent.futures import ProcessPoolExecutor
 import datetime
 import json
+import traceback
 
 errorbuf = [];
 

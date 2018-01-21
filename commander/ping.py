@@ -94,7 +94,7 @@ class ping(object):
             t2 = datetime.datetime.now();
             pt = t2 - t1;
             ms = (pt.seconds*1000 + pt.microseconds/1000)/2;
-            results.append(['',data.embedder([['**Ping results:**','Mean average connection speed: ``' + str(ms) + 'ms``.']]), msg.channel]);
+            yield from data.messager([['',data.embedder([['**Ping results:**','Mean average connection speed: ``' + str(ms) + 'ms``.']]), msg.channel]]);
             return;
         else:
             results = [];
