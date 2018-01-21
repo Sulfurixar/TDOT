@@ -1,7 +1,6 @@
 import asyncio
 from server import server
 import discord
-import json
 
 class vote(object):
 

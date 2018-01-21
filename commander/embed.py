@@ -1,9 +1,7 @@
 import asyncio
 import discord
-import json
 import sys
 import os
-import traceback
 
 class embed(object):
 
@@ -191,7 +189,7 @@ class embed(object):
                     else:
                         skip = len(args[argpos:]);
                         nArgs = args[argpos:];
-                        emb, res = data.json(nArgs);
+                        emb, res = data.json(nArgs, msg);
                         if emb != None:
                             if type(emb) is list:
                                 res = [];

@@ -1,8 +1,6 @@
 import asyncio
 from server import server
 import discord
-import json
-import traceback
 
 class setup(object):
     def __init__(self):
@@ -329,7 +327,7 @@ class setup(object):
                     if arg.lower() == 'welcomemsg':
                         skip = len(args[argpos:]);
                         nArgs = args[argpos + 1:];
-                        emb, res = data.json(nArgs);
+                        emb, res = data.json(nArgs, msg);
                         if emb != None:
                             data.servers[msg.server.id].welcomeMessage = emb;
                             data.servers[msg.server.id].update(client);
@@ -374,7 +372,7 @@ class setup(object):
                                             if a == 'set':
                                                 nSkip = len(nArgs[nArgpos:]);
                                                 bArgs = nArgs[nArgpos + 1:];
-                                                emb, res = data.json(bArgs);
+                                                emb, res = data.json(bArgs, msg);
                                                 if emb != None:
                                                     data.servers[msg.server.id].perms = emb;
                                                     data.servers[msg.server.id].update(client);
@@ -391,7 +389,7 @@ class setup(object):
                     if arg.lower() == 'setgiveroles':
                         skip = len(args[argpos:]);
                         nArgs = args[argpos + 1:];
-                        emb, res = data.json(nArgs);
+                        emb, res = data.json(nArgs, msg);
                         roles = {};
                         if emb != None:
                             for role in emb:

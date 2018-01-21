@@ -138,7 +138,7 @@ class data(object):
                     yield from client.send_message(msg.author, '...', embed=error);
             self.messages[msg.author.id] = archive;
             
-    def json(self, args):
+    def json(self, args, msg):
         js = '';
         results = [];
         for nArg in args:
@@ -166,9 +166,9 @@ class data(object):
                 elif s > 15 and len(js) < s + 15:
                     ns = js[s-35:s] + ' __**' + js[s] + '**__ ' + js[s+36:];
                 print(ns);
-                results.append(['', data.embedder([['**Error:**', traceback.format_exc(limit=0) + '\n' + ns]], colour=data.embed_error), msg.channel]);
+                results.append(['', self.embedder([['**Error:**', traceback.format_exc(limit=0) + '\n' + ns]], colour=self.embed_error), msg.channel]);
             except:
-                results.append(['', data.embedder([['**Error:**', traceback.format_exc(limit=0) + '\n' + str(js)]]), msg.channel]);
+                results.append(['', self.embedder([['**Error:**', traceback.format_exc(limit=0) + '\n' + str(js)]]), msg.channel]);
         return emb, results;
 
 d = data();

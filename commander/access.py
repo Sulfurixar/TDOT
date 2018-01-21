@@ -163,7 +163,7 @@ class access(object):
                     if arg.lower() == 'config':
                         skip = len(args[argpos:]);
                         nArgs = args[argpos + 1:];
-                        emb, res = data.json(nArgs);
+                        emb, res = data.json(nArgs, msg);
                         if emb != None:
                             data.servers[msg.server.id].customData['access'] = emb;
                             data.servers[msg.server.id].update(client);
