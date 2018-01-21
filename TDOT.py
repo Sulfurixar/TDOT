@@ -315,8 +315,8 @@ def on_message_delete(msg):
                                 yield from client.send_message(s.deleteChannel[2], embed=embed);
                         if len(msg.attachments) > 0:
                             yield from client.send_message(s.deleteChannel[2], "It had attachment(s) with it:");
-                                for attachment in msg.attachments:
-                                    yield from client.send_message(s.deleteChannel[2], attachment);
+                            for attachment in msg.attachments:
+                                yield from client.send_message(s.deleteChannel[2], attachment);
 
 @client.event
 @asyncio.coroutine
