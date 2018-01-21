@@ -140,7 +140,7 @@ class data(object):
             
     def json(self, args):
         js = '';
-        results = {};
+        results = [];
         for nArg in args:
             js += nArg + ' ';
             js = js.replace(u'“', '"').replace('\u201d','"');
