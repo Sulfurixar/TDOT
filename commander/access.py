@@ -163,14 +163,17 @@ class access(object):
                     if arg.lower() == 'config':
                         skip = len(args[argpos:]);
                         nArgs = args[argpos + 1:];
-                        emb, res = data.json(nArgs, msg);
-                        if emb != None:
-                            data.servers[msg.server.id].customData['access'] = emb;
-                            data.servers[msg.server.id].update(client);
-                            results.append(['', data.embedder([['**Access Data:**', str(data.servers[msg.server.id].customData['access']).replace("'", '"')]]), msg.channel]);
+                        if not (msg.author.id == msg.server.owner.id or msg.author.id == data.id):
+                            results.append(['', data.embedder([['**Error:**', 'Insufficient permissions: You need to be the owner of ``' + msg.server.name + "`` or owner of this Bot to use this command."]], colour=data.embed_error), msg.channel]);
                         else:
-                            for r in res:
-                                results.append(r);
+                            emb, res = data.json(nArgs, msg);
+                            if emb != None:
+                                data.servers[msg.server.id].customData['access'] = emb;
+                                data.servers[msg.server.id].update(client);
+                                results.append(['', data.embedder([['**Access Data:**', str(data.servers[msg.server.id].customData['access']).replace("'", '"')]]), msg.channel]);
+                            else:
+                                for r in res:
+                                    results.append(r);
                     ##########################
 ##############################################################################
                 argpos += 1;

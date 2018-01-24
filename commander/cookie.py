@@ -1,5 +1,6 @@
 import asyncio
 import discord
+import os
 
 class cookie(object):
 
@@ -20,6 +21,16 @@ class cookie(object):
                 'Sets the default cookie into the specified emoji.\n' +
                 'How to use this command: ``e!cookie setcookie (args)``\n' +
                 'For Example: ``e!cookie setcookie :cookie:`` - sets the default cookie into a cookie.'
+        };
+        self.userExample = {
+            'total_cookies': 0,
+            'cookiesThisCycle': 0,
+            'active_cycles': 0,
+            'inactive_cycles': 0,
+            'get': { 'cycle': 0, 'average': 0 },
+            'give': { 'cycle': 0, 'average': 0 },
+            'cookieGiveAverage': 0,
+            'custom': {}
         };
         return super().__init__();
 
@@ -84,13 +95,52 @@ class cookie(object):
         return use
 
         
+    #{
+    #   "cookies": {
+    #       "default": "emoji",
+    #       "custom": {
+    #           "emoji": 10 //emoji and it's value in cookies
+    #           }
+    #       },
+    #       "analytics": {
+    #           "totalCookies": 123,
+    #           "cookiesThisCycle": 123,
+    #           "cycleCount": 123,
+    #           "epochCount": 0,
+    #           "cookieAveragePerCycle": 123,
+    #           "cookieChargeMax": 100,
+    #           "cookieChargeOptimal": 25,
+    #           "totalActiveCycles": 9001,
+    #           "totalInactiveCycles": 9999999
+    #       }
+    #   }
+    #}
+        
     @asyncio.coroutine
     def ticker(self, client, data):
         pass
         
     @asyncio.coroutine
     def reactor(self, client, reaction, user, data):
-        pass
+        msg = reaction.message;
+        emoji = reaction.emoji;
+        react = False;
+        if 'cookie' in data.servers[msg.server.id].customData:
+            if 'default' in data.servers[msg.server.id].customData['cookie']:
+                if emoji == data.servers[msg.server.id].customData['cookie']['default']:
+                    react = True;
+        if react:
+            u1 = user;
+            u2 = msg.author;
+            h = os.getcwd();
+            cookies = os.path.join(h, 'commander', 'cookies');
+            if not os.path.exists(cookies):
+                os.makedirs(cookies);
+            cookies = os.path.join(cookies, msg.server.id);
+            if not os.path.exists(cookies):
+                os.makedirs(cookies);
+            u1_dir = os.path.join(cookies, u1.id + '.json');
+            u2_dir = os.path.join(cookies, u2.id + '.json');
 
     @asyncio.coroutine
     def execute(self, client, msg, data, args):
@@ -133,7 +183,18 @@ class cookie(object):
                     if arg.lower() == 'setcookie':
                         skip = 1;
                         c = args[argpos + 1];
-                        print(c);
+                        if not (msg.author.id == msg.server.owner.id or msg.author.id == data.id):
+                            results.append(['', data.embedder([['**Error:**', 'Insufficient permissions: You need to be the owner of ``' + msg.server.name + "`` or owner of this Bot to use this command."]], colour=data.embed_error), msg.channel]);
+                        else:
+                            if '<' in c:
+                                s = c.split(':');
+                                c = s[1];
+                            if 'cookie' in data.servers[msg.server.id].customData:
+                                data.servers[msg.server.id].customData['cookie']['default'] = c;
+                            else:
+                                data.servers[msg.server.id].customData['cookie'] = {'default': c};
+                            data.servers[msg.server.id].update(client);
+                            results.append(['', data.embedder([['Updated cookie:', c]]), msg.channel]);
 #############################################################################
                 argpos += 1;
             yield from data.messager(msg, results);
