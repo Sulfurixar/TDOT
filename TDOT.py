@@ -32,7 +32,7 @@ class data(object):
         self.embed_normal = 0xFFE83C;
         self.embed_error = 0xDC143C;
         self.embed_announce = 0x00FFFF;
-        self.version = 'Truly Golden Update 0.3'
+        self.version = 'Truly Golden Update 0.3.1'
         return super().__init__();
 
     def embedder(self, fields, given_embed=None, colour=None):
@@ -312,8 +312,8 @@ def on_message_delete(msg):
                         yield from client.send_message(s.deleteChannel[2], '_   _', embed=embed);
                         if len(msg.embeds) > 0:
                             yield from client.send_message(s.deleteChannel[2], "It had embed(s) with it:");
-                            for embed in msg.embeds:
-                                yield from client.send_message(s.deleteChannel[2], embed=embed);
+                            for embedd in msg.embeds:
+                                yield from client.send_message(s.deleteChannel[2], embed=embedd);
                         if len(msg.attachments) > 0:
                             yield from client.send_message(s.deleteChannel[2], "It had attachment(s) with it:");
                             for attachment in msg.attachments:

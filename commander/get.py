@@ -190,6 +190,8 @@ class get(object):
                             "Server Authentication Roles: " + authRoles + "\n" +
                             "Server Debug Channel: ``" + str(s.debugChannel[0]) + ":" + str(s.debugChannel[1]) + "``\n" +
                             "Server Welcome Channel: ``" + str(s.welcomeChannel[0]) + ":" + str(s.welcomeChannel[1]) + "``\n" +
+                            "Server Joining Channel: ``" + str(s.joinChannel[0]) + ":" + str(s.joinChannel[1]) + "``\n" +
+                            "Server Leaving Channel: ``" + str(s.leaveChannel[0]) + ":" + str(s.leaveChannel[1]) + "``\n" +
                             "User Welcoming: ``" + str(s.welcoming) + "``\n" +
                             "Server Command Channel: ``" + str(s.commandChannel[0]) + ":" + str(s.commandChannel[1]) + "``\n" +
                             "Server Message Edit Checking Channel: ``" + str(s.editChannel[0]) + ':' + str(s.editChannel[1]) + "``\n" +
