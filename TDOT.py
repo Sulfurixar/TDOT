@@ -313,7 +313,7 @@ def on_message_delete(msg):
                         if len(msg.embeds) > 0:
                             yield from client.send_message(s.deleteChannel[2], "It had embed(s) with it:");
                             for embedd in msg.embeds:
-                                yield from client.send_message(s.deleteChannel[2], str('```' + embedd + '```'));
+                                yield from client.send_message(s.deleteChannel[2], '```' + str(embedd) + '```');
                         if len(msg.attachments) > 0:
                             yield from client.send_message(s.deleteChannel[2], "It had attachment(s) with it:");
                             for attachment in msg.attachments:
