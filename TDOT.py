@@ -516,13 +516,11 @@ def execute(buf):
         loop.close()
 
 
-run = True
 errorbuf = []
-while run:
-    try:
-        execute(errorbuf)
-    except KeyboardInterrupt:
-        run = False
-    except Exception as ex:
-        print(str(ex))
-        time.sleep(10)
+try:
+    execute(errorbuf)
+except KeyboardInterrupt:
+    run = False
+except Exception as ex:
+    print(str(ex))
+    time.sleep(10)
