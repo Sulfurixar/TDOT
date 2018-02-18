@@ -341,7 +341,7 @@ def on_message_delete(msg):
         s = d.servers[s]
         if s.message_delete_logging and s.delete_channel != ['', ''] and s.active and s.delete_channel[2] != msg.channel:
             if msg.author.id in d.dmessages:
-                if msg.isinstance(type(d.dmessages[msg.author.id])):
+                if msg.type == type(d.dmessages[msg.author.id]):
                     if msg.content == d.dmessages[msg.author.id].content:
                         return
             embed = d.embedder([[
