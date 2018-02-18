@@ -1,17 +1,18 @@
 import asyncio
-import discord
 import os
+import json
+
 
 class cookie(object):
 
     def __init__(self):
-        self.description = 'Used to give your buddies a cookie on a good day.';
-        self.permissions = [];
-        self.Owner = False;
-        self.bOwner = False;
-        self.name = 'cookie';
-        self.tick = True;
-        self.react = True;
+        self.description = 'Used to give your buddies a cookie on a good day.'
+        self.permissions = []
+        self.Owner = False
+        self.bOwner = False
+        self.name = 'cookie'
+        self.tick = True
+        self.react = True
         self.commands = {
             'help':
                 'Displays how to use a specific command.\n' +
@@ -21,81 +22,34 @@ class cookie(object):
                 'Sets the default cookie into the specified emoji.\n' +
                 'How to use this command: ``e!cookie setcookie (args)``\n' +
                 'For Example: ``e!cookie setcookie :cookie:`` - sets the default cookie into a cookie.'
-        };
+        }
         self.userExample = {
-            'total_cookies': 0,
-            'cookiesThisCycle': 0,
             'active_cycles': 0,
             'inactive_cycles': 0,
-            'get': { 'cycle': 0, 'average': 0 },
-            'give': { 'cycle': 0, 'average': 0 },
-            'cookieGiveAverage': 0,
-            'custom': {}
-        };
-        return super().__init__();
+            'get': {'total': 0, 'cycle': 0, 'average': 0},
+            'give': {'total': 0, 'cycle': 0, 'average': 0},
+            'custom': {},
+            'previous_cycles': {}
 
-    def error(self, data, msg):
-        message = 'Insufficient permissions. ';
-        if len(self.permissions) > 0:
-            message += 'You must have: ';
-            for perm in self.permissions:
-                message += '``' + perm + '`` '
-            message += '; permissions by default.'
-        if self.Owner and not self.bOwner:
-            message += ' This command can be run by the Owner of ``' + msg.server.name + '`` or ``Bot``.';
-        elif self.bOwner:
-            message += ' This command can be run only by the Owner of the ``Bot``.';
-        return data.embedder([['**Error:**', message]], colour=data.embed_error);
-        
+        }
+        self.configExample = {
+            'default': '',
+            "custom": {},
+            "analytics": {
+                "totalCookies": 0,
+                "cookiesThisCycle": 0,
+                "cycleCount": 0,
+                "epochCount": 0,
+                "cookieAveragePerCycle": 0,
+                "cookieChargeMax": 0,
+                "cookieChargeOptimal": 0,
+                "totalActiveCycles": 0,
+                "totalInactiveCycles": 0
+            },
+            'previous_analytics': {}
+        }
 
-    def check(self, data, msg):
-        r = False;
-        if msg.server.id in data.servers:
-            p = data.servers[msg.server.id].perms;
-            for entry in p:
-                if msg.author.id in entry['names']:
-                    if self.name in entry['cmds']:
-                        return True;
-                for role in entry['roles']:
-                    r = discord.utils.find(lambda m: m.id == role, msg.author.roles);
-                    print(r.name)
-                    if r != None:
-                        if self.name in entry['cmds']:
-                            return True;
-        return False
-
-    #@asyncio.coroutine
-    def can_use(self, data, msg):
-        use = True;
-        for perm in self.permissions:
-            #not (has perm or is me) // if has perm = True -> False, if is me = True -> False, if has perm and is me == False -> True
-            #val = (data.perms._user(data, msg.author, [msg.channel, perm]) or msg.author.id == data.id or self.check(data, msg));
-            a = data.perms._user(data, msg.author, [msg.channel, perm]);
-            if msg.author.id == data.id:
-                b = True
-            else:
-                b = False
-            c = self.check(data, msg)
-            print(perm)
-            print(str(a) + '|' + str(b) + '|' + str(c))
-            if (True not in [a, b, c]):
-                use = False;
-        print('1)' + str(use))
-        # not ((reqOwner and is Owner) or is me)
-        if self.Owner:
-            if msg.author.id != msg.server.owner.id:
-                if msg.author.id != data.id:
-                    use = False;
-        print('2)' + str(use))
-        if self.bOwner and msg.author.id != data.id:
-            use = False;
-        print('3)' + str(use))
-        #if not use:
-            #yield from data.messager(msg, [['', self.error(data, msg), msg.channel]]);
-        return use
-
-        
-    #{
+    # {
     #   "cookies": {
     #       "default": "emoji",
     #       "custom": {
@@ -114,88 +68,190 @@ class cookie(object):
     #           "totalInactiveCycles": 9999999
     #       }
     #   }
-    #}
+    # }
         
     @asyncio.coroutine
     def ticker(self, client, data):
-        pass
-        
+        for server in data.servers:
+            if 'cookies' in data.servers[server].customData:
+                if 'analytics' in data.servers[server].customData['cookies']:
+                    for t in self.configExample:
+                        if t not in data.servers[server].customData['cookies']:
+                            data.servers[server].customData['cookies'] = self.configExample[t]
+                        else:
+                            if t == 'analytics':
+                                for y in self.configExample['analytics']:
+                                    if y not in data.servers[server].customData['cookies']['analytics']:
+                                        data.servers[server].customData['cookies']['analytics'][y] = \
+                                            self.configExample['analytics'][y]
+                    if os.path.exists(os.path.join(os.getcwd(), 'commander', 'cookies', server)):
+                        user_files = os.listdir(os.path.join(os.getcwd(), 'commander', 'cookies', server))
+                        
+                        total_cookies = 0
+                        active_cycles = 0
+                        inactive_cycles = 0
+                        get_cycle = []
+                        get_average = []
+                        give_cycle = []
+                        give_average = []
+                        
+                        for userPath in user_files:
+                            with open(userPath) as uFile:
+                                u_data = json.load(uFile)
+                                uFile.close()
+                            for e in u_data:
+                                if e == 'active_cycles':
+                                    active_cycles = active_cycles + int(u_data[e])
+                                if e == 'inactive_cycles':
+                                    inactive_cycles = inactive_cycles + int(u_data[e])
+                                if e == 'get':
+                                    get_cycle.append(int(u_data[e]))
+                                    avg = u_data[e]['total'] / (u_data['active_cycles'] + u_data['inactive_cycles'])
+                                    get_average.append(avg)
+                                    u_data[e]['average'] = avg
+                                    total_cookies = total_cookies + u_data[e]['total']
+                                if e == 'give':
+                                    give_cycle.append(int(u_data[e]))
+                                    avg = u_data[e]['total'] / (u_data['active_cycles'] + u_data['inactive_cycles'])
+                                    give_average.append(avg)
+                                    u_data[e]['average'] = avg
+                else:
+                    data.servers[server].customData['cookies']['analytics'] = self.configExample['analytics']
+
+    @staticmethod
+    def check_exists(paths):
+        if type(paths).isinstance([]):
+            paths = [paths]
+        for path in paths:
+            if not os.path.exists(path):
+                os.makedirs(path)
+                
+    def check_vars(self, js):
+        for t in self.userExample:
+            if t not in js:
+                js[t] = self.userExample[t]
+        return js
+
+    def h_user(self, user, backup, data):
+        with open(user, 'r') as uFile:
+            try:
+                js = json.load(user)
+            except Exception as e:
+                print(repr(e))
+                with open(backup, 'r') as bFile:
+                    try:
+                        js = json.load(backup)
+                    except Exception as f:  # this is really bad...
+                        print(repr(f))
+                        js = self.userExample
+                    bFile.close()
+            uFile.close()
+        js = self.check_vars(js)
+        return js
+
     @asyncio.coroutine
     def reactor(self, client, reaction, user, data):
-        msg = reaction.message;
-        emoji = reaction.emoji;
-        react = False;
+        msg = reaction.message
+        emoji = reaction.emoji
+        react = False
         if 'cookie' in data.servers[msg.server.id].customData:
             if 'default' in data.servers[msg.server.id].customData['cookie']:
                 if emoji == data.servers[msg.server.id].customData['cookie']['default']:
-                    react = True;
+                    react = True
         if react:
-            u1 = user;
-            u2 = msg.author;
-            h = os.getcwd();
-            cookies = os.path.join(h, 'commander', 'cookies');
+            u1 = user
+            u2 = msg.author
+            h = os.getcwd()
+            cookies = os.path.join(h, 'commander', 'cookies')
+            backup = os.path.join(cookies, 'backups')
             if not os.path.exists(cookies):
-                os.makedirs(cookies);
-            cookies = os.path.join(cookies, msg.server.id);
+                os.makedirs(cookies)
+            cookies = os.path.join(cookies, msg.server.id)
             if not os.path.exists(cookies):
-                os.makedirs(cookies);
-            u1_dir = os.path.join(cookies, u1.id + '.json');
-            u2_dir = os.path.join(cookies, u2.id + '.json');
+                os.makedirs(cookies)
+            u1_dir = os.path.join(cookies, u1.id + '.json')
+            u2_dir = os.path.join(cookies, u2.id + '.json')
+            cycle = str(data.servers[msg.server.id].customData['cookies']['analytics']['cycleCount'])
+            u1_bak = os.path.join(backup, '[' + cycle + ']' + u1.id + '.json')
+            u2_bak = os.path.join(backup, '[' + cycle + ']' + u2.id + '.json')
+            
+            js = self.h_user(u1_dir, u1_bak, data)
+            json.dump(js, u1_bak)
+            js['give']['cycle'] = js['give']['cycle'] + 1
+            json.dump(js, u1_dir)
+            
+            js = self.h_user(u2_dir, u2_bak, data)
+            json.dump(js, u2_bak)
+            js['total_cookies'] = js['total_cookies'] + 1
+            js['get']['cycle'] = js['get']['cycle'] + 1
+            json.dump(js, u2_dir)
 
     @asyncio.coroutine
     def execute(self, client, msg, data, args):
-        if not self.can_use(data, msg):
-            yield from data.messager(msg, [['', self.error(data, msg), msg.channel]]);
-            return;
+        if not data.can_use(self, msg):
+            yield from data.messager(msg, [['', data.error(self, msg), msg.channel]])
+            return
 
         if len(args) == 0:
-            yield from data.messager(msg, data.help(msg, self));
-            return;
+            yield from data.messager(msg, data.help(msg, self))
+            return
         else:
-            results = [];
-            skip = 0;
-            argpos = 0;
+            results = []
+            skip = 0
+            argpos = 0
             for arg in args:
                 if skip > 0:
-                    skip -= 1;
-                    argpos += 1;
-                    continue;
+                    skip -= 1
+                    argpos += 1
+                    continue
                 else:
                     if arg.lower() not in self.commands:
-                        results.append(['', 
+                        results.append([
+                            '',
                             data.embedder([
-                                ['**Error:**', "Couldn't recognise ``" + arg + '``.']
-                            ], colour=data.embed_error), msg.channel
-                        ]);
-                        argpos += 1;
-                        continue;
+                                ['**Error:**', "Couldn't recognise ``" + arg + '``.']],
+                                colour=data.embed_error
+                            ),
+                            msg.channel
+                        ])
+                        argpos += 1
+                        continue
 #############################################################################
                     if arg.lower() == 'help':
-                        help = [];
                         if len(args[argpos + 1:]) > 0:
-                            help = data.help(msg, self, args[argpos + 1:]);
-                            skip = len(args[argpos + 1:]);
+                            _help = data.help(msg, self, args[argpos + 1:])
+                            skip = len(args[argpos + 1:])
                         else:
-                            help = data.help(msg, self);
-                        for h in help:
-                            results.append(h);
+                            _help = data.help(msg, self)
+                        for h in _help:
+                            results.append(h)
                     ########################################################
                     if arg.lower() == 'setcookie':
-                        skip = 1;
-                        c = args[argpos + 1];
+                        skip = 1
+                        c = args[argpos + 1]
                         if not (msg.author.id == msg.server.owner.id or msg.author.id == data.id):
-                            results.append(['', data.embedder([['**Error:**', 'Insufficient permissions: You need to be the owner of ``' + msg.server.name + "`` or owner of this Bot to use this command."]], colour=data.embed_error), msg.channel]);
+                            results.append([
+                                '',
+                                data.embedder(
+                                    [[
+                                        '**Error:**',
+                                        'Insufficient permissions: You need to be the owner of ``' + msg.server.name +
+                                        "`` or owner of this Bot to use this command."
+                                    ]],
+                                    colour=data.embed_error
+                                ),
+                                msg.channel
+                            ])
                         else:
                             if '<' in c:
-                                s = c.split(':');
-                                c = s[1];
+                                s = c.split(':')
+                                c = s[1]
                             if 'cookie' in data.servers[msg.server.id].customData:
-                                data.servers[msg.server.id].customData['cookie']['default'] = c;
+                                data.servers[msg.server.id].customData['cookie']['default'] = c
                             else:
-                                data.servers[msg.server.id].customData['cookie'] = {'default': c};
-                            data.servers[msg.server.id].update(client);
-                            results.append(['', data.embedder([['Updated cookie:', c]]), msg.channel]);
+                                data.servers[msg.server.id].customData['cookie'] = {'default': c}
+                            data.servers[msg.server.id].update(client)
+                            results.append(['', data.embedder([['Updated cookie:', c]]), msg.channel])
 #############################################################################
-                argpos += 1;
-            yield from data.messager(msg, results);
-            results = [];
+                argpos += 1
+            yield from data.messager(msg, results)

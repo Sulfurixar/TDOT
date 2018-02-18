@@ -1,84 +1,73 @@
 import json
 import discord
 
-class server(object):
-    def __init__(self, client, ID):
-        self.client = client;
-        self.serve = discord.utils.find(lambda m: m.id == ID, client.servers);
-        self.id = ID;
+
+class Server(object):
+    def __init__(self, client, c_id):
+        self.client = client
+        self.serve = discord.utils.find(lambda m: m.id == c_id, client.servers)
+        self.c_id = c_id
         try:
-            self.name = self.serve.name;
-        except:
-            self.name = ' ';
-        self.active = True;
-        self.auth = False;
-        self.commandLogging = False;
-        self.messageDeleteLogging = False;
-        self.messageEditLogging = False;
-        self.welcomeMessage = {'name':'Welcome!','value':'I hope you have a nice stay!'}
+            self.name = self.serve.name
+        except Exception as e:
+            print(e)
+            self.name = ' '
+        self.active = True
+        self.auth = False
+        self.command_logging = False
+        self.message_delete_logging = False
+        self.message_edit_logging = False
+        self.welcome_message = {'name': 'Welcome!', 'value': 'I hope you have a nice stay!'}
         self.welcoming = False
-        self.question = '';
-        self.answer = '';
-        self.giveRoles = False;
-        self.authRoles = {}; #name: id
-        self.debugChannel = ['','']; #name, id, channel
-        self.welcomeChannel = ['','']; #name, id, channel
-        self.commandChannel = ['','']; #name, id, channel
-        self.deleteChannel = ['','']; #name, id, channel
-        self.editChannel = ['','']; #name, id, channel
-        self.joinChannel = ['', '']; #name, id, channel
-        self.leaveChannel = ['', '']; #name, id, channel
-        self.perms = []; #[{name: [roles{name: id}, cmds[name]]}]
-        self.rules = []; # {'text':'', 'embed':embed}
-        self.customData = {};
-        return super().__init__();
+        self.question = ''
+        self.answer = ''
+        self.give_roles = False
+        self.auth_roles = {}             # name: c_id
+        self.debug_channel = ['', '']     # name, c_id, channel
+        self.welcome_channel = ['', '']   # name, c_id, channel
+        self.command_channel = ['', '']   # name, c_id, channel
+        self.delete_channel = ['', '']    # name, c_id, channel
+        self.edit_channel = ['', '']      # name, c_id, channel
+        self.join_channel = ['', '']     # name, c_id, channel
+        self.leave_channel = ['', '']    # name, c_id, channel
+        self.perms = []                 # [{name: [roles{name: c_id}, cmds[name]]}]
+        self.rules = []                 # {'text':'', 'embed':embed}
+        self.custom_data = {}
 
     def update(self, client):
-        path = 'config.json';
-        config = json.load(open(path));
-        p1 = -1;
+        path = 'config.json'
+        config = json.load(open(path))
+        p1 = -1
         for i in range(0, len(config['servers'])):
-            if config['servers'][i]['id'] == self.id:
-                p1 = i;
-        serverData = {};
-        serverData['id'] = self.id;
-        serverData['name'] = discord.utils.find(lambda m: m.id == self.id, client.servers).name;
-        serverData['active'] = self.active;
-        serverData['auth'] = {
-            "active": self.auth,
-            "question": self.question,
-            "answer": self.answer,
-            "roles": self.authRoles,
-            "giveRoles": self.giveRoles
-        };
-        serverData['customData'] = self.customData;
-        serverData['commandLogging'] = self.commandLogging;
-        serverData['messageDeleteLogging'] = self.messageDeleteLogging;
-        serverData['messageEditLogging'] = self.messageEditLogging;
-        serverData['welcome'] = self.welcomeChannel[1];
-        serverData['join'] = self.joinChannel[1];
-        serverData['leave'] = self.leaveChannel[1];
-        serverData['welcomeMessage'] = self.welcomeMessage;
-        serverData['welcoming'] = self.welcoming;
-        serverData['debug'] = self.debugChannel[1];
-        serverData['command'] = self.commandChannel[1];
-        serverData['delete'] = self.deleteChannel[1];
-        serverData['edit'] = self.editChannel[1];
-        serverData['perms'] = self.perms;
-        #print(self.rules);
-        serverData['rules'] = [];
+            if config['servers'][i]['id'] == self.c_id:
+                p1 = i
+        server_data = {
+            'id': self.c_id,
+            'name': discord.utils.find(lambda m: m.id == self.c_id, client.servers).name,
+            'active': self.active, 'auth': {
+                "active": self.auth,
+                "question": self.question,
+                "answer": self.answer,
+                "roles": self.auth_roles,
+                "giveRoles": self.give_roles
+            },
+            'customData': self.custom_data, 'commandLogging': self.command_logging,
+            'messageDeleteLogging': self.message_delete_logging, 'messageEditLogging': self.message_edit_logging,
+            'welcome': self.welcome_channel[1], 'join': self.join_channel[1], 'leave': self.leave_channel[1],
+            'welcomeMessage': self.welcome_message, 'welcoming': self.welcoming,
+            'debug': self.debug_channel[1], 'command': self.command_channel[1],
+            'delete': self.delete_channel[1], 'edit': self.edit_channel[1], 'perms': self.perms, 'rules': []
+        }
         for rule in self.rules:
-            new_rule = {};
-            new_rule['text'] = rule[0];
-            embed = rule[1];
-            #print(embed.__dict__);
-            new_rule['embed'] = embed.to_dict();
-            serverData['rules'].append(new_rule);
-        print(serverData);
+            new_rule = {'text': rule[0]}
+            embed = rule[1]
+            new_rule['embed'] = embed.to_dict()
+            server_data['rules'].append(new_rule)
+        print(server_data)
         if p1 != -1:
-            config['servers'][p1] = serverData;
+            config['servers'][p1] = server_data
         else:
-            config['servers'].append(serverData);
+            config['servers'].append(server_data)
         with open('config.json', 'w') as f:
-            json.dump(config, f);
-            f.close();
+            json.dump(config, f)
+            f.close()
