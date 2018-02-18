@@ -1,4 +1,5 @@
 import asyncio
+import discord
 
 
 class get(object):
@@ -27,8 +28,36 @@ class get(object):
                 'How to use this command: ``e!get roles``',
             'users':
                 'Displays all the users in this server.\n' +
-                'How to use this command: ``e!get users``'
+                'How to use this command: ``e!get users``',
+            'user':
+                'Displays all the user\'s data in this server.\n' +
+                'How to use this command: ``e!get user (user)``'
         }
+
+    def unlist(self, lists, t=-1):
+        s = ''
+        if type(lists) == type({}):
+            t += 1
+            for e in lists:
+                c = 0
+                if t > c:
+                    while t > c:
+                        s += '\t'
+                        c += 1
+                s += '' + e + ': ' + self.unlist(lists[e], t=t) + '\n'
+        elif type(lists) == type([]):
+            lists.reverse()
+            c = 0
+            t += 1
+            if t > c:
+                while t > c:
+                    s += '\t'
+                    c += 1
+            for e in lists:
+                s += '' + self.unlist(e, t=t) + '\n'
+        else:
+            return lists
+        return s
 
     @asyncio.coroutine
     def execute(self, client, msg, data, args):
@@ -214,6 +243,53 @@ class get(object):
                                 msg.channel
                             ])
                             c += 1
+                    ####
+                    if arg.lower() == 'user':
+                        users = []
+                        try:
+                            n_args = args[argpos + 1:]
+                            skip = len(n_args)
+                            for name in n_args:
+                                if '@' in name:
+                                    name = name[2:len(name) - 1]
+                                    if name[0] == '!':
+                                        name = name[1:]
+                                    user = msg.server.get_member(name)
+                                else:
+                                    user = discord.utils.find(lambda m: m.display_name == name[1:], msg.server.members)
+                                if user is None:
+                                    user = discord.utils.find(lambda m: m.id == name, msg.server.members)
+                                if user is None:
+                                    results.append([
+                                        '',
+                                        data.embedder(
+                                            [['**Error:**', 'Specified user: ``' + name + '`` could not be found.']]
+                                        ),
+                                        msg.channel
+                                    ])
+                                else:
+                                    users.append(user)
+                        except IndexError:
+                            results.append([
+                                '',
+                                data.embedder(
+                                    [['**Error:**', 'No users were specified!']]
+                                ),
+                                msg.channel
+                            ])
+                        for user in users:
+                            w = [['User Data:', '``' + str(user.display_name) + ': ' + str(user.id) + '``']]
+                            data.c.set_user_data(user)
+                            u_data = data.c.get_user_data(user)
+                            for key in u_data:
+                                if u_data[key] is not None and u_data[key] != '':
+                                    w.append([key.replace('_', ' '), '``' + str(self.unlist(u_data[key])) + '``'])
+                            w = data.embedder(w)
+                            results.append([
+                                '',
+                                w,
+                                msg.channel
+                            ])
                     ####
                 ##############################################################################
                 argpos += 1

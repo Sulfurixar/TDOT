@@ -1,5 +1,6 @@
 import json
 import sys
+import os
 from server import Server
 import discord
 from datetime import datetime
@@ -186,3 +187,81 @@ class Config(object):
                     print("No 'id' was found in '" + serve + "' in '" + self.path + "'.")
         else:
             print("No 'servers' were  found in '" + self.path + "'.")
+
+    @staticmethod
+    def check_dir(path):
+        if os.path.exists(path):
+            return True
+        else:
+            return False
+
+    def get_server(self, server):
+        if 'data' not in os.listdir(os.getcwd()):
+            os.mkdir(os.path.join(os.getcwd(), 'data'))
+        s_path = os.path.join(os.getcwd(), 'data', server.id)
+        if not self.check_dir(s_path):
+            os.mkdir(os.path.join(s_path))
+        return s_path
+
+    @staticmethod
+    def create_user_data(user):
+        w = {
+            'roles': {},
+            'joined_at': user.joined_at.strftime("%Y-%m-%d %H:%M:%S"),
+            'status': str(user.status),
+            'game': '',
+            'nick': [user.nick],
+            'name': [user.name]
+        }
+        for r in user.roles:
+            w['roles'][r.id] = r.name.replace('@', '')
+        if user.game is not None:
+            w['game'] = user.game.name + ':' + user.game.url + ':' + user.game.type
+        return w
+
+    def get_user_data(self, user):
+        s_path = self.get_server(user.server)
+        u_path = os.path.join(s_path, user.id + '.json')
+        if user.id + '.json' not in os.listdir(s_path):
+            w = self.create_user_data(user)
+            with open(u_path, 'w') as u_file:
+                json.dump(w, u_file)
+                u_file.close()
+            return w
+        else:
+            try:
+                with open(u_path, 'r') as u_file:
+                    w = json.load(u_file)
+                    u_file.close()
+                return w
+            except Exception as e:
+                print(repr(e))
+
+    def backup(self, user):
+        d = os.path.join(os.getcwd(), 'data', 'backups')
+        s = os.path.join(d, user.server.id)
+        if not self.check_dir(d):
+            os.mkdir(d)
+        if not self.check_dir(s):
+            os.mkdir(s)
+        u = os.path.join(s, user.id + '.' + datetime.now().strftime("%Y-%m-%d") + '.json')
+        u_data = self.get_user_data(user)
+        with open(u, 'w') as u_file:
+            json.dump(u_data, u_file)
+            u_file.close()
+
+    def set_user_data(self, user, data=None):
+        self.backup(user)
+        s_path = self.get_server(user.server)
+        u_path = os.path.join(s_path, user.id + '.json')
+        w = self.get_user_data(user)
+        if data is not None and len(data) > 0:
+            for key in data:
+                w[key] = data[key]
+        if user.name not in w['name']:
+            w['name'].append(user.name)
+        if user.nick not in w['nick']:
+            w['nick'].append(user.nick)
+        with open(u_path, 'w') as u_file:
+            json.dump(w, u_file)
+            u_file.close()

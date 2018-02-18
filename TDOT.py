@@ -166,32 +166,51 @@ class Data(object):
             return results
 
     @asyncio.coroutine
-    def messager(self, msg, messages):
-        if len(self.messages) > 0:
-            if msg.author.id in self.messages:
-                if len(self.messages[msg.author.id]) > 0:
-                    for message in self.messages[msg.author.id]:
-                        if self.perms._user(self, client.user, [message.channel, 'manage messages']):
-                            try:
-                                yield from client.delete_message(message)
-                            except Exception as e:
-                                print(e)
-            self.messages[msg.author.id] = []
-
+    def messager(self, msg, messagess):
         archive = []
-        for messag in messages:
-            if self.perms._user(self, client.user, [messag[2], 'send messages']):
+        if len(self.messages) > 0:
+            if msg.author.id in self.messages and len(self.messages[msg.author.id]) > 0:
+                for message in self.messages[msg.author.id]:
+                    if self.perms._user(self, client.user, [message.channel, 'manage messages']):
+                        try:
+                            yield from client.delete_message(message)
+                        except Exception as e:
+                            print(repr(e))
+            self.messages[msg.author.id] = []
+        if len(messagess) > 0:
+            for messag in messagess:
+                if self.perms._user(self, client.user, [messag[2], 'send messages']):
+                    try:
+                        mesg = yield from client.send_message(messag[2], messag[0], embed=messag[1])
+                        archive.append(mesg)
+                    except Exception as e:
+                        error = self.embedder([["**Error:**", str(e)]])
+                        yield from client.send_message(msg.author, '...', embed=error)
+                else:
+                    error = self.embedder([[
+                        "**Insufficient Permissions:**", "Unable to send message to ``" + message[2].server.name + ":" +
+                        message[2].server.id + ">" + message[2].channel.name + ":" + message[2].channel.id +
+                        "`` - 'send messages'."
+                    ]])
+                    yield from client.send_message(msg.author, '...', embed=error)
+        else:
+            if self.perms._user(self, client.user, [msg.channel, 'send messages']):
                 try:
-                    mesg = yield from client.send_message(messag[2], messag[0], embed=messag[1])
+                    mesg = yield from client.send_message(
+                        msg.channel,
+                        '',
+                        embed=self.embedder([['Error', 'No message was given to messager!']])
+                    )
                     archive.append(mesg)
                 except Exception as e:
                     error = self.embedder([["**Error:**", str(e)]])
                     yield from client.send_message(msg.author, '...', embed=error)
             else:
                 error = self.embedder([[
-                    "**Insufficient Permissions:**", "Unable to send message to ``" + message[2].server.name + ":" +
-                    message[2].server.id + ">" + message[2].channel.name + ":" + message[2].channel.id +
-                    "`` - 'send messages'."
+                    "**Insufficient Permissions:**", "Unable to send message to ``" + msg.server.name + ":" +
+                                                     msg.server.id + ">" + msg.channel.name + ":" +
+                                                     msg.channel.id +
+                                                     "`` - 'send messages'."
                 ]])
                 yield from client.send_message(msg.author, '...', embed=error)
         self.messages[msg.author.id] = archive

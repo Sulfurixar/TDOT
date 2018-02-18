@@ -63,7 +63,6 @@ class Server(object):
             embed = rule[1]
             new_rule['embed'] = embed.to_dict()
             server_data['rules'].append(new_rule)
-        print(server_data)
         if p1 != -1:
             config['servers'][p1] = server_data
         else:

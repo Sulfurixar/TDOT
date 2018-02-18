@@ -156,6 +156,16 @@ class warn(object):
                                 warnings[user.id].append({'date': str(datetime.datetime.now()), 'reason': message})
                             else:
                                 warnings[user.id] = [{'date': str(datetime.datetime.now()), 'reason': message}]
+                            u_data = data.c.get_user_data(user)
+                            if 'warnings' in u_data:
+                                w = u_data['warnings']
+                                w.append({'date': str(datetime.datetime.now()), 'reason': message})
+                                data.c.set_user_data(user, {'warnings': w})
+                            else:
+                                data.c.set_user_data(
+                                    user,
+                                    {'warnings': [{'date': str(datetime.datetime.now()), 'reason': message}]}
+                                )
                             nwarnings = []
                             for warning in warnings[user.id]:
                                 date = datetime.datetime.strptime(warning['date'], '%Y-%m-%d %H:%M:%S.%f')
@@ -165,7 +175,7 @@ class warn(object):
                                     nwarnings.append(warning)
                             warnings[user.id] = nwarnings
                             if len(warnings[user.id]) >= 3:
-                                if data.servers[msg.server.id].debugChannel != ['', '']:
+                                if data.servers[msg.server.id].command_channel != ['', '']:
                                     wr = ''
                                     c = 0
                                     for warning in warnings[user.id]:

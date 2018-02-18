@@ -85,9 +85,9 @@ class setup(object):
 
     @staticmethod
     def channeler(data, msg, client, info, name):
-        channel = discord.utils.find(lambda m: m.name == info, msg.Server.channels)
+        channel = discord.utils.find(lambda m: m.name == info, msg.server.channels)
         if channel is None:
-            channel = discord.utils.find(lambda m: m.id == info, msg.Server.channels)
+            channel = discord.utils.find(lambda m: m.id == info, msg.server.channels)
         if channel is None:
             return None, [
                 '',
@@ -95,9 +95,9 @@ class setup(object):
                 msg.channel
             ]
         else:
-            if channel.Server.id not in data.servers:
-                data.servers[msg.Server.id] = Server(client, msg.Server.id)
-                data.servers[msg.Server.id].update(client)
+            if channel.server.id not in data.servers:
+                data.servers[msg.server.id] = Server(client, msg.server.id)
+                data.servers[msg.server.id].update(client)
             return channel, [
                 '',
                 data.embedder([[
@@ -149,55 +149,55 @@ class setup(object):
                         skip = 1
                         channel, res = self.channeler(data, msg, client, args[argpos + 1], "Command Channel")
                         if channel is not None:
-                            data.servers[msg.Server.id].command_channel = [channel.name, channel.id, channel]
-                            data.servers[msg.Server.id].update(client)
+                            data.servers[msg.server.id].command_channel = [channel.name, channel.id, channel]
+                            data.servers[msg.server.id].update(client)
                         results.append(res)
                     ##########################
                     if arg.lower() == 'msgdelchannel':
                         skip = 1
                         channel, res = self.channeler(data, msg, client, args[argpos + 1], "Delete Channel")
                         if channel is not None:
-                            data.servers[msg.Server.id].delete_channel = [channel.name, channel.id, channel]
-                            data.servers[msg.Server.id].update(client)
+                            data.servers[msg.server.id].delete_channel = [channel.name, channel.id, channel]
+                            data.servers[msg.server.id].update(client)
                         results.append(res)
                     #########################
                     if arg.lower() == 'msgeditchannel':
                         skip = 1
                         channel, res = self.channeler(data, msg, client, args[argpos + 1], "Message Edit Channel")
                         if channel is not None:
-                            data.servers[msg.Server.id].edit_channel = [channel.name, channel.id, channel]
-                            data.servers[msg.Server.id].update(client)
+                            data.servers[msg.server.id].edit_channel = [channel.name, channel.id, channel]
+                            data.servers[msg.server.id].update(client)
                         results.append(res)
                     #########################
                     if arg.lower() == 'joinchannel':
                         skip = 1
                         channel, res = self.channeler(data, msg, client, args[argpos + 1], "User Join Channel")
                         if channel is not None:
-                            data.servers[msg.Server.id].join_channel = [channel.name, channel.id, channel]
-                            data.servers[msg.Server.id].update(client)
+                            data.servers[msg.server.id].join_channel = [channel.name, channel.id, channel]
+                            data.servers[msg.server.id].update(client)
                         results.append(res)
                     #########################
                     if arg.lower() == 'leavechannel':
                         skip = 1
                         channel, res = self.channeler(data, msg, client, args[argpos + 1], "User Leaving Channel")
                         if channel is not None:
-                            data.servers[msg.Server.id].leave_channel = [channel.name, channel.id, channel]
-                            data.servers[msg.Server.id].update(client)
+                            data.servers[msg.server.id].leave_channel = [channel.name, channel.id, channel]
+                            data.servers[msg.server.id].update(client)
                         results.append(res)
                     #################
                     if arg.lower() == 'authentication':
                         skip = 1
                         if args[argpos + 1].lower() == 'true':
-                            data.servers[msg.Server.id].auth = True
-                            data.servers[msg.Server.id].update(client)
+                            data.servers[msg.server.id].auth = True
+                            data.servers[msg.server.id].update(client)
                             results.append([
                                 '',
                                 data.embedder([['**Authentication:**', 'Set authentication for this Server to True.']]),
                                 msg.channel
                             ])
                         elif args[argpos + 1].lower() == 'false':
-                            data.servers[msg.Server.id].auth = False
-                            data.servers[msg.Server.id].update(client)
+                            data.servers[msg.server.id].auth = False
+                            data.servers[msg.server.id].update(client)
                             results.append([
                                 '',
                                 data.embedder([[
@@ -218,16 +218,16 @@ class setup(object):
                     if arg.lower() == 'giveroles':
                         skip = 1
                         if args[argpos + 1].lower() == 'true':
-                            data.servers[msg.Server.id].give_roles = True
-                            data.servers[msg.Server.id].update(client)
+                            data.servers[msg.server.id].give_roles = True
+                            data.servers[msg.server.id].update(client)
                             results.append([
                                 '',
                                 data.embedder([['**GiveRoles:**', 'Set giveRoles for this Server to True.']]),
                                 msg.channel
                             ])
                         elif args[argpos + 1].lower() == 'false':
-                            data.servers[msg.Server.id].give_roles = False
-                            data.servers[msg.Server.id].update(client)
+                            data.servers[msg.server.id].give_roles = False
+                            data.servers[msg.server.id].update(client)
                             results.append([
                                 '',
                                 data.embedder([['**GiveRoles:**', 'Set giveRoles for this Server to False.']]),
@@ -246,8 +246,8 @@ class setup(object):
                     if arg.lower() == 'cmdlog':
                         skip = 1
                         if args[argpos + 1].lower() == 'true':
-                            data.servers[msg.Server.id].command_logging = True
-                            data.servers[msg.Server.id].update(client)
+                            data.servers[msg.server.id].command_logging = True
+                            data.servers[msg.server.id].update(client)
                             results.append([
                                 '',
                                 data.embedder(
@@ -256,8 +256,8 @@ class setup(object):
                                 msg.channel
                             ])
                         elif args[argpos + 1].lower() == 'false':
-                            data.servers[msg.Server.id].command_logging = False
-                            data.servers[msg.Server.id].update(client)
+                            data.servers[msg.server.id].command_logging = False
+                            data.servers[msg.server.id].update(client)
                             results.append([
                                 '',
                                 data.embedder([[
@@ -269,8 +269,8 @@ class setup(object):
                     if arg.lower() == 'active':
                         skip = 1
                         if args[argpos + 1].lower() == 'true':
-                            data.servers[msg.Server.id].active = True
-                            data.servers[msg.Server.id].update(client)
+                            data.servers[msg.server.id].active = True
+                            data.servers[msg.server.id].update(client)
                             results.append([
                                 '',
                                 data.embedder([[
@@ -279,8 +279,8 @@ class setup(object):
                                 msg.channel
                             ])
                         elif args[argpos + 1].lower() == 'false':
-                            data.servers[msg.Server.id].active = False
-                            data.servers[msg.Server.id].update(client)
+                            data.servers[msg.server.id].active = False
+                            data.servers[msg.server.id].update(client)
                             results.append([
                                 '',
                                 data.embedder([[
@@ -292,8 +292,8 @@ class setup(object):
                     if arg.lower() == 'msgdellog':
                         skip = 1
                         if args[argpos + 1].lower() == 'true':
-                            data.servers[msg.Server.id].message_delete_logging = True
-                            data.servers[msg.Server.id].update(client)
+                            data.servers[msg.server.id].message_delete_logging = True
+                            data.servers[msg.server.id].update(client)
                             results.append([
                                 '',
                                 data.embedder([[
@@ -302,8 +302,8 @@ class setup(object):
                                 msg.channel
                             ])
                         elif args[argpos + 1].lower() == 'false':
-                            data.servers[msg.Server.id].message_delete_logging = False
-                            data.servers[msg.Server.id].update(client)
+                            data.servers[msg.server.id].message_delete_logging = False
+                            data.servers[msg.server.id].update(client)
                             results.append([
                                 '',
                                 data.embedder([[
@@ -316,8 +316,8 @@ class setup(object):
                     if arg.lower() == 'msgeditlog':
                         skip = 1
                         if args[argpos + 1].lower() == 'true':
-                            data.servers[msg.Server.id].message_edit_logging = True
-                            data.servers[msg.Server.id].update(client)
+                            data.servers[msg.server.id].message_edit_logging = True
+                            data.servers[msg.server.id].update(client)
                             results.append([
                                 '',
                                 data.embedder([[
@@ -326,8 +326,8 @@ class setup(object):
                                 msg.channel
                             ])
                         elif args[argpos + 1].lower() == 'false':
-                            data.servers[msg.Server.id].message_edit_logging = False
-                            data.servers[msg.Server.id].update(client)
+                            data.servers[msg.server.id].message_edit_logging = False
+                            data.servers[msg.server.id].update(client)
                             results.append([
                                 '', 
                                 data.embedder([[
@@ -340,16 +340,16 @@ class setup(object):
                     if arg.lower() == 'welcoming':
                         skip = 1
                         if args[argpos + 1].lower() == 'true':
-                            data.servers[msg.Server.id].welcoming = True
-                            data.servers[msg.Server.id].update(client)
+                            data.servers[msg.server.id].welcoming = True
+                            data.servers[msg.server.id].update(client)
                             results.append([
                                 '', 
                                 data.embedder([['**Welcoming:**', 'Set welcoming for this Server to True.']]), 
                                 msg.channel
                             ])
                         elif args[argpos + 1].lower() == 'false':
-                            data.servers[msg.Server.id].welcoming = False
-                            data.servers[msg.Server.id].update(client)
+                            data.servers[msg.server.id].welcoming = False
+                            data.servers[msg.server.id].update(client)
                             results.append([
                                 '', 
                                 data.embedder([['**Welcoming:**', 'Set welcoming for this Server to False.']]), 
@@ -361,8 +361,8 @@ class setup(object):
                         n_args = args[argpos + 1:]
                         emb, res = data.json(n_args, msg)
                         if emb is not None:
-                            data.servers[msg.Server.id].welcome_message = emb
-                            data.servers[msg.Server.id].update(client)
+                            data.servers[msg.server.id].welcome_message = emb
+                            data.servers[msg.server.id].update(client)
                             results.append([
                                 '**Set welcome message to:**', 
                                 data.embedder([[emb['name'], emb['value']]]), 
@@ -408,7 +408,7 @@ class setup(object):
                                                     '',
                                                     data.embedder([[
                                                         '**Server Permissions:**', 
-                                                        str(data.servers[msg.Server.id].perms).replace("'", '"')
+                                                        str(data.servers[msg.server.id].perms).replace("'", '"')
                                                     ]]), 
                                                     msg.channel
                                                 ])
@@ -418,8 +418,8 @@ class setup(object):
                                                 b_args = n_args[n_argpos + 1:]
                                                 emb, res = data.json(b_args, msg)
                                                 if emb is not None:
-                                                    data.servers[msg.Server.id].perms = emb
-                                                    data.servers[msg.Server.id].update(client)
+                                                    data.servers[msg.server.id].perms = emb
+                                                    data.servers[msg.server.id].update(client)
                                                     results.append([
                                                         '',
                                                         data.embedder([[
@@ -438,7 +438,7 @@ class setup(object):
                                 '',
                                 data.embedder([[
                                     '**Server Permissions:**',
-                                    str(data.servers[msg.Server.id].perms).replace("'", '"')
+                                    str(data.servers[msg.server.id].perms).replace("'", '"')
                                 ]]),
                                 msg.channel
                             ])
@@ -450,9 +450,9 @@ class setup(object):
                         roles = {}
                         if emb is not None:
                             for role in emb:
-                                r = discord.utils.find(lambda m: m.id == emb[role], msg.Server.roles)
+                                r = discord.utils.find(lambda m: m.id == emb[role], msg.server.roles)
                                 if r is None:
-                                    r = discord.utils.find(lambda m: m.name == role, msg.Server.roles)
+                                    r = discord.utils.find(lambda m: m.name == role, msg.server.roles)
                                 if r is None:
                                     results.append([
                                         '',
@@ -463,8 +463,8 @@ class setup(object):
                                     ])
                                 else:
                                     roles[r.name] = r.id
-                            data.servers[msg.Server.id].auth_roles = roles
-                            data.servers[msg.Server.id].update(client)
+                            data.servers[msg.server.id].auth_roles = roles
+                            data.servers[msg.server.id].update(client)
                             results.append([
                                 '',
                                 data.embedder([['**Set giveroles to:**', '``' + str(roles) + '``']]),
@@ -475,15 +475,15 @@ class setup(object):
                                 results.append(r)
                     ##########################################################
                     if arg.lower() == 'update':
-                        if msg.Server.id in data.servers:
-                            data.servers[msg.Server.id].update(client)
+                        if msg.server.id in data.servers:
+                            data.servers[msg.server.id].update(client)
                         else:
-                            s = Server(client, msg.Server.id)
-                            data.Server.append({msg.Server.id: s})
-                            data.Server[msg.Server.id].update(client)
+                            s = Server(client, msg.server.id)
+                            data.Server.append({msg.server.id: s})
+                            data.Server[msg.server.id].update(client)
                         results.append([
                             '',
-                            data.embedder([['**Updated ``' + msg.Server.name + "``**", 'Update complete.']]),
+                            data.embedder([['**Updated ``' + msg.server.name + "``**", 'Update complete.']]),
                             msg.channel
                         ])
                     ##########################################
