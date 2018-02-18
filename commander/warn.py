@@ -17,7 +17,9 @@ class warn(object):
             'help':
                 'Displays how to use a specific command.\n' +
                 'How to use this command: ``e!warn help (args)``\n' +
-                'For Example: ``e!warn help help`` - shows this message.',
+                'For Example: ``e!warn help help`` - shows this message.\n' +
+                'How to use this command: ``e!warn (user) (reason)``\n' +
+                "For Example: ``e!warn @Elisiya#1234 You did a bad hing!``",
             'show':
                 'Displays the warnings that are currently active.\n' +
                 'How to use this command: ``e!warn show``\n' +

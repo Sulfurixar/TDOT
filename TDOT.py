@@ -500,7 +500,7 @@ def execute(buf):
         # tasks = [asyncio.Task(login()),  asyncio.Task(ticker())]
         loop.run_until_complete(asyncio.gather(*tasks))
     except Exception as e:
-        print(e)
+        print(repr(e))
         if not (e in buf):
             log.exception(e)
             buf.append(e)
@@ -508,17 +508,19 @@ def execute(buf):
                 buf = buf[1:]
         loop.run_until_complete(client.logout())
         for task in asyncio.Task.all_tasks():
-            task.cancel()
+            try:
+                task.cancel()
+            except Exception as f:
+                print(repr(f))
     finally:
         loop.close()
-        return buf
 
 
 run = True
 errorbuf = []
 while run:
     try:
-        errorbuf = execute(errorbuf)
+        execute(errorbuf)
     except KeyboardInterrupt:
         run = False
     except Exception as ex:
