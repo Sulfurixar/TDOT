@@ -1,6 +1,7 @@
 import asyncio
 import os
-import json
+import discord
+import datetime
 
 
 class cookie(object):
@@ -24,29 +25,39 @@ class cookie(object):
                 'For Example: ``e!cookie setcookie :cookie:`` - sets the default cookie into a cookie.'
         }
         self.userExample = {
-            'active_cycles': 0,
-            'inactive_cycles': 0,
+            'active_cycles': [0, 0],  # [cycle, epoch]
+            'inactive_cycles': [0, 0],  # [cycle, epoch]
             'get': {'total': 0, 'cycle': 0, 'average': 0},
             'give': {'total': 0, 'cycle': 0, 'average': 0},
-            'custom': {},
-            'previous_cycles': {}
+            'status': {
+                'active': {
+                    'date': datetime.datetime.now().strftime('%Y-%m-%d %H'),
+                    'active': True
+                },
+                'inactive': {
+                    'date': '',
+                    'active': False
+                },
+                'frozen': {
+                    'date': '',
+                    'active': False
+                }
+            }
 
         }
         self.configExample = {
             'default': '',
-            "custom": {},
             "analytics": {
                 "totalCookies": 0,
                 "cookiesThisCycle": 0,
-                "cycleCount": 0,
-                "epochCount": 0,
+                "cycleStartDate": datetime.datetime.now().strftime('%Y-%m-%d %H'),
+                "cycleCount": [0, 0],
                 "cookieAveragePerCycle": 0,
                 "cookieChargeMax": 0,
                 "cookieChargeOptimal": 0,
                 "totalActiveCycles": 0,
                 "totalInactiveCycles": 0
-            },
-            'previous_analytics': {}
+            }
         }
 
     # {
@@ -59,95 +70,155 @@ class cookie(object):
     #       "analytics": {
     #           "totalCookies": 123,
     #           "cookiesThisCycle": 123,
-    #           "cycleCount": 123,
-    #           "epochCount": 0,
+    #           "cycleStartDate": 1998-12-13 6,
+    #           "cycleCount": 123, /hours 0 ->
+    #           "epochCount": 0, /28 days
     #           "cookieAveragePerCycle": 123,
     #           "cookieChargeMax": 100,
     #           "cookieChargeOptimal": 25,
     #           "totalActiveCycles": 9001,
     #           "totalInactiveCycles": 9999999
-    #       }
+    #       },
+    #       "previous_analytics":{}
     #   }
     # }
-        
-    @asyncio.coroutine
-    def ticker(self, client, data):
-        for server in data.servers:
-            if 'cookies' in data.servers[server].custom_data:
-                if 'analytics' in data.servers[server].custom_data['cookies']:
-                    for t in self.configExample:
-                        if t not in data.servers[server].custom_data['cookies']:
-                            data.servers[server].custom_data['cookies'] = self.configExample[t]
-                        else:
-                            if t == 'analytics':
-                                for y in self.configExample['analytics']:
-                                    if y not in data.servers[server].custom_data['cookies']['analytics']:
-                                        data.servers[server].custom_data['cookies']['analytics'][y] = \
-                                            self.configExample['analytics'][y]
-                    if os.path.exists(os.path.join(os.getcwd(), 'commander', 'cookies', server)):
-                        user_files = os.listdir(os.path.join(os.getcwd(), 'commander', 'cookies', server))
-                        
-                        total_cookies = 0
-                        active_cycles = 0
-                        inactive_cycles = 0
-                        get_cycle = []
-                        get_average = []
-                        give_cycle = []
-                        give_average = []
-                        
-                        for userPath in user_files:
-                            with open(userPath) as uFile:
-                                u_data = json.load(uFile)
-                                uFile.close()
-                            for e in u_data:
-                                if e == 'active_cycles':
-                                    active_cycles = active_cycles + int(u_data[e])
-                                if e == 'inactive_cycles':
-                                    inactive_cycles = inactive_cycles + int(u_data[e])
-                                if e == 'get':
-                                    get_cycle.append(int(u_data[e]))
-                                    avg = u_data[e]['total'] / (u_data['active_cycles'] + u_data['inactive_cycles'])
-                                    get_average.append(avg)
-                                    u_data[e]['average'] = avg
-                                    total_cookies = total_cookies + u_data[e]['total']
-                                if e == 'give':
-                                    give_cycle.append(int(u_data[e]))
-                                    avg = u_data[e]['total'] / (u_data['active_cycles'] + u_data['inactive_cycles'])
-                                    give_average.append(avg)
-                                    u_data[e]['average'] = avg
-                else:
-                    data.servers[server].custom_data['cookies']['analytics'] = self.configExample['analytics']
+
+    def update_config(self, conf):
+        default = self.configExample
+        for key in default:
+            if key not in conf:
+                conf[key] = default[key]
+            if key == 'analytics':
+                for key2 in default[key]:
+                    if key2 not in conf[key]:
+                        conf[key][key2] = default[key][key2]
+        return conf
+
+    def update_user(self, u_data):
+        default = self.userExample
+        for key in default:
+            if key not in u_data:
+                u_data[key] = default[key]
+            if key == 'get' or key == 'give':
+                for key2 in default[key]:
+                    if key2 not in u_data[key]:
+                        u_data[key][key2] = default[key][key2]
+                        if key == 'status':
+                            for key3 in default[key][key2]:
+                                if key3 not in u_data[key][key2]:
+                                    u_data[key][key2][key3] = default[key][key2][key3]
+        return u_data
 
     @staticmethod
-    def check_exists(paths):
-        if type(paths).isinstance([]):
-            paths = [paths]
-        for path in paths:
-            if not os.path.exists(path):
-                os.makedirs(path)
-                
-    def check_vars(self, js):
-        for t in self.userExample:
-            if t not in js:
-                js[t] = self.userExample[t]
-        return js
+    def update_user_data(u_data, member, curdate):
+        # - UPDATE CURRENT STATE
+        ###############################################################################################
+        if u_data['status']['active']['active']:
+            if u_data['give']['cycle'] == 0 or u_data['get']['cycle'] == 0:
+                if member.status is discord.Status.offline:
+                    u_data['status']['active']['active'] = False
+                    u_data['status']['inactive']['active'] = True
+                    u_data['status']['inactive']['date'] = curdate.strftime('%Y-%m-%d %H')
+        if u_data['status']['inactive']['active']:
+            if u_data['give']['cycle'] > 0 or u_data['get']['cycle'] > 0 or \
+                    member.status is not discord.Status.offline:
+                u_data['status']['inactive']['active'] = False
+                u_data['status']['frozen']['active'] = False
+                u_data['status']['active']['active'] = True
+                u_data['status']['active']['date'] = curdate.strftime('%Y-%m-%d %H')
+            else:
+                d1 = u_data['status']['inactive']['date'].strptime('%Y-%m-%d %H')
+                d = curdate - d1
+                if d.days >= 28 and not u_data['status']['frozen']['active']:
+                    u_data['status']['frozen']['active'] = True
+        ################################################################################################
 
-    def h_user(self, user, backup, data):
-        with open(user, 'r') as uFile:
-            try:
-                js = json.load(user)
-            except Exception as e:
-                print(repr(e))
-                with open(backup, 'r') as bFile:
-                    try:
-                        js = json.load(backup)
-                    except Exception as f:  # this is really bad...
-                        print(repr(f))
-                        js = self.userExample
-                    bFile.close()
-            uFile.close()
-        js = self.check_vars(js)
-        return js
+        # - UPDATE CYCLES
+        #########################################################################
+        if u_data['status']['active']['active']:
+            u_data['active_cycles'][0] += 1
+            if u_data['active_cycles'][0] % 672 == 0:
+                u_data['active_cycles'] = [0, u_data['active_cycles'][1] + 1]
+        if u_data['status']['inactive']['active']:
+            u_data['inactive_cycles'][0] += 1
+            if u_data['inactive_cycles'][0] % 672 == 0:
+                u_data['inactive_cycles'] = [0, u_data['inactive_cycles'][1] + 1]
+        #########################################################################
+
+        # - UPDATE GET/GIVE
+        #############################################################################
+        u_data['get']['total'] = u_data['get']['total'] + u_data['get']['cycle']
+        u_data['get']['cycle'] = 0
+        u_data['get']['average'] = \
+            u_data['get']['total'] / \
+            (
+                    u_data['active_cycles'][0] + u_data['inactive_cycles'][0] +
+                    672*(u_data['active_cycles'][1] + u_data['inactive_cycles'][1])
+            )
+        u_data['give']['total'] = u_data['give']['total'] + u_data['give']['cycle']
+        u_data['give']['cycle'] = 0
+        u_data['give']['average'] = \
+            u_data['give']['total'] / \
+            (
+                    u_data['active_cycles'][0] + u_data['inactive_cycles'][0] +
+                    672 * (u_data['active_cycles'][1] + u_data['inactive_cycles'][1])
+            )
+        #############################################################################
+
+        return u_data
+
+    @asyncio.coroutine
+    def ticker(self, client, data):
+        curdate = datetime.datetime.now()
+        for server in data.servers:
+
+            cookies_this_cycle = 0
+            total_cookies = 0
+            average_average = 0
+            total_active = 0
+            total_inactive = 0
+
+            # - COOKIE ANALYTICS IN CONFIG.JSON
+            ####################################################################
+            if 'cookies' not in data.servers[server].custom_data:
+                data.servers[server].custom_data['cookies'] = self.configExample
+                conf = data.servers[server].custom_data['cookies']
+            else:
+                conf = self.update(data.servers[server].custom_data['cookies'])
+            ####################################################################
+            s = client.get_server(server)
+            if s.large:
+                yield from client.request_offline_members(s)
+            members = s.members
+            c = len(members)
+            for member in members:
+                u_data = self.update_user(data.c.get_user_data(member))
+                cookies_this_cycle += u_data['get']['cycle']
+
+                u_data = self.update_user_data(u_data, member, curdate)
+
+                total_cookies += u_data['get']['total']
+                average_average += u_data['give']['average']
+                total_active += u_data['active_cycles']
+                total_inactive += u_data['inactive_cycles']
+
+                data.c.set_user_data(member, u_data=u_data)
+
+            conf['analytics']['totalCookies'] = total_cookies
+            conf['analytics']['cookiesThisCycle'] = cookies_this_cycle
+            conf['analytics']['cycleCount'][0] += 1
+            if conf['analytics']['cycleCount'][0] % 672 == 0:
+                conf['analytics']['cycleCount'][0] = 0
+                conf['analytics']['cycleCount'][1] += 1
+            conf['analytics']['cookieAveragePerCycle'] = total_cookies / \
+                                                         (
+                                                                 conf['analytics']['cycleCount'][0] +
+                                                                 672*conf['analytics']['cycleCount'][1]
+                                                         )
+            conf['analytics']['totalActiveCycles'] = total_active
+            conf['analytics']['totalInactiveCycles'] = total_inactive
+
+            #TODO: cookie charge max, cookie charge optimal
 
     @asyncio.coroutine
     def reactor(self, client, reaction, user, data):
@@ -161,30 +232,6 @@ class cookie(object):
         if react:
             u1 = user
             u2 = msg.author
-            h = os.getcwd()
-            cookies = os.path.join(h, 'commander', 'cookies')
-            backup = os.path.join(cookies, 'backups')
-            if not os.path.exists(cookies):
-                os.makedirs(cookies)
-            cookies = os.path.join(cookies, msg.server.id)
-            if not os.path.exists(cookies):
-                os.makedirs(cookies)
-            u1_dir = os.path.join(cookies, u1.id + '.json')
-            u2_dir = os.path.join(cookies, u2.id + '.json')
-            cycle = str(data.servers[msg.server.id].custom_data['cookies']['analytics']['cycleCount'])
-            u1_bak = os.path.join(backup, '[' + cycle + ']' + u1.id + '.json')
-            u2_bak = os.path.join(backup, '[' + cycle + ']' + u2.id + '.json')
-            
-            js = self.h_user(u1_dir, u1_bak, data)
-            json.dump(js, u1_bak)
-            js['give']['cycle'] = js['give']['cycle'] + 1
-            json.dump(js, u1_dir)
-            
-            js = self.h_user(u2_dir, u2_bak, data)
-            json.dump(js, u2_bak)
-            js['total_cookies'] = js['total_cookies'] + 1
-            js['get']['cycle'] = js['get']['cycle'] + 1
-            json.dump(js, u2_dir)
 
     @asyncio.coroutine
     def execute(self, client, msg, data, args):
@@ -216,7 +263,7 @@ class cookie(object):
                         ])
                         argpos += 1
                         continue
-#############################################################################
+                    #############################################################################
                     if arg.lower() == 'help':
                         if len(args[argpos + 1:]) > 0:
                             _help = data.help(msg, self, args[argpos + 1:])
@@ -252,6 +299,6 @@ class cookie(object):
                                 data.servers[msg.server.id].custom_data['cookie'] = {'default': c}
                             data.servers[msg.server.id].update(client)
                             results.append(['', data.embedder([['Updated cookie:', c]]), msg.channel])
-#############################################################################
+                #############################################################################
                 argpos += 1
             yield from data.messager(msg, results)
