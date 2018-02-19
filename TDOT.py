@@ -506,7 +506,7 @@ def execute():
     try:
         loop = asyncio.get_event_loop()
         tasks = [asyncio.Task(login()),  asyncio.Task(ticker())]  # tasks = [asyncio.Task(login()),  asyncio.Task(ticker())]
-        loop.run_until_complete(asyncio.gather(*tasks));
+        loop.run_until_complete(asyncio.gather(*tasks))
     except Exception as e:
         errors(e)
         loop.run_until_complete(client.logout())

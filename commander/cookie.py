@@ -73,16 +73,16 @@ class cookie(object):
     @asyncio.coroutine
     def ticker(self, client, data):
         for server in data.servers:
-            if 'cookies' in data.servers[server].customData:
-                if 'analytics' in data.servers[server].customData['cookies']:
+            if 'cookies' in data.servers[server].custom_data:
+                if 'analytics' in data.servers[server].custom_data['cookies']:
                     for t in self.configExample:
-                        if t not in data.servers[server].customData['cookies']:
-                            data.servers[server].customData['cookies'] = self.configExample[t]
+                        if t not in data.servers[server].custom_data['cookies']:
+                            data.servers[server].custom_data['cookies'] = self.configExample[t]
                         else:
                             if t == 'analytics':
                                 for y in self.configExample['analytics']:
-                                    if y not in data.servers[server].customData['cookies']['analytics']:
-                                        data.servers[server].customData['cookies']['analytics'][y] = \
+                                    if y not in data.servers[server].custom_data['cookies']['analytics']:
+                                        data.servers[server].custom_data['cookies']['analytics'][y] = \
                                             self.configExample['analytics'][y]
                     if os.path.exists(os.path.join(os.getcwd(), 'commander', 'cookies', server)):
                         user_files = os.listdir(os.path.join(os.getcwd(), 'commander', 'cookies', server))
@@ -116,7 +116,7 @@ class cookie(object):
                                     give_average.append(avg)
                                     u_data[e]['average'] = avg
                 else:
-                    data.servers[server].customData['cookies']['analytics'] = self.configExample['analytics']
+                    data.servers[server].custom_data['cookies']['analytics'] = self.configExample['analytics']
 
     @staticmethod
     def check_exists(paths):
@@ -154,9 +154,9 @@ class cookie(object):
         msg = reaction.message
         emoji = reaction.emoji
         react = False
-        if 'cookie' in data.servers[msg.server.id].customData:
-            if 'default' in data.servers[msg.server.id].customData['cookie']:
-                if emoji == data.servers[msg.server.id].customData['cookie']['default']:
+        if 'cookie' in data.servers[msg.server.id].custom_data:
+            if 'default' in data.servers[msg.server.id].custom_data['cookie']:
+                if emoji == data.servers[msg.server.id].custom_data['cookie']['default']:
                     react = True
         if react:
             u1 = user
@@ -171,7 +171,7 @@ class cookie(object):
                 os.makedirs(cookies)
             u1_dir = os.path.join(cookies, u1.id + '.json')
             u2_dir = os.path.join(cookies, u2.id + '.json')
-            cycle = str(data.servers[msg.server.id].customData['cookies']['analytics']['cycleCount'])
+            cycle = str(data.servers[msg.server.id].custom_data['cookies']['analytics']['cycleCount'])
             u1_bak = os.path.join(backup, '[' + cycle + ']' + u1.id + '.json')
             u2_bak = os.path.join(backup, '[' + cycle + ']' + u2.id + '.json')
             
@@ -246,10 +246,10 @@ class cookie(object):
                             if '<' in c:
                                 s = c.split(':')
                                 c = s[1]
-                            if 'cookie' in data.servers[msg.server.id].customData:
-                                data.servers[msg.server.id].customData['cookie']['default'] = c
+                            if 'cookie' in data.servers[msg.server.id].custom_data:
+                                data.servers[msg.server.id].custom_data['cookie']['default'] = c
                             else:
-                                data.servers[msg.server.id].customData['cookie'] = {'default': c}
+                                data.servers[msg.server.id].custom_data['cookie'] = {'default': c}
                             data.servers[msg.server.id].update(client)
                             results.append(['', data.embedder([['Updated cookie:', c]]), msg.channel])
 #############################################################################
