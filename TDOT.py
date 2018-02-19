@@ -490,9 +490,18 @@ log.setLevel(logging.ERROR)
 handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 log.addHandler(handler)
+errorbuf = []
 
 
-def execute(buf):
+def errors(e):
+    if e not in errorbuf:
+        errorbuf.append(e)
+        print(repr(e))
+        if len(errorbuf) > 10:
+            errorbuf.remove(errorbuf[0])
+
+
+def execute():
     # executor = ProcessPoolExecutor(2)
     loop = asyncio.get_event_loop()
     try:
@@ -500,27 +509,23 @@ def execute(buf):
         # tasks = [asyncio.Task(login()),  asyncio.Task(ticker())]
         loop.run_until_complete(asyncio.gather(*tasks))
     except Exception as e:
-        print(repr(e))
-        if not (e in buf):
-            log.exception(e)
-            buf.append(e)
-            if len(buf) > 10:
-                buf = buf[1:]
+        errors(e)
         loop.run_until_complete(client.logout())
         for task in asyncio.Task.all_tasks():
             try:
                 task.cancel()
             except Exception as f:
-                print(repr(f))
+            errors(f)
     finally:
         loop.close()
 
 
-errorbuf = []
-try:
-    execute(errorbuf)
-except KeyboardInterrupt:
-    run = False
-except Exception as ex:
-    print(str(ex))
-    time.sleep(10)
+run = True
+while run:
+    try:
+        execute()
+    except KeyboardInterrupt:
+        run = False
+    except Exception as ex:
+        errors(ex)
+        time.sleep(10)
