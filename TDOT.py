@@ -515,7 +515,7 @@ def execute():
             try:
                 task.cancel()
             except Exception as f:
-            errors(f)
+                errors(f)
     finally:
         loop.close()
 
