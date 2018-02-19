@@ -6,7 +6,7 @@ import time
 from config import Config
 from commandes import Commandes
 from checkPermissions import CheckPermissions
-# from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures import ProcessPoolExecutor
 import datetime
 import json
 import traceback
@@ -502,23 +502,18 @@ def errors(e):
 
 
 def execute():
-    # executor = ProcessPoolExecutor(2)
-    loop = asyncio.get_event_loop()
+    executor = ProcessPoolExecutor(2)
     try:
-        tasks = [asyncio.Task(login()),  asyncio.Task(ticker())]
-        # tasks = [asyncio.Task(login()),  asyncio.Task(ticker())]
-        loop.run_until_complete(asyncio.gather(*tasks))
+        loop = asyncio.get_event_loop()
+        tasks = [asyncio.Task(login()),  asyncio.Task(ticker())]  # tasks = [asyncio.Task(login()),  asyncio.Task(ticker())]
+        loop.run_until_complete(asyncio.gather(*tasks));
     except Exception as e:
         errors(e)
         loop.run_until_complete(client.logout())
         for task in asyncio.Task.all_tasks():
-            try:
-                task.cancel()
-            except Exception as f:
-                errors(f)
+            task.cancel()
     finally:
         loop.close()
-
 
 run = True
 while run:
