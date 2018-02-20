@@ -102,7 +102,7 @@ class cookie(object):
         for key in default:
             if key not in u_data:
                 u_data['cookies'][key] = default[key]
-            if key == 'get' or key == 'give':
+            if key == 'get' or key == 'give' or key == 'status':
                 for key2 in default[key]:
                     if key2 not in u_data[key]:
                         u_data['cookies'][key][key2] = default[key][key2]
