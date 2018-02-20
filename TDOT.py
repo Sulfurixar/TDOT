@@ -263,20 +263,23 @@ d = Data()
 def ticker():
     c = 0
     while True:
-        if c != 0:
-            t = 60.0 - datetime.datetime.now().minute
-            yield from asyncio.sleep(float(t*60.0))
-        else:
-            c = 1
-        print("Elapsed time: (" + str(c) + ")")
         try:
-            c += 1
-        except Exception as e:
-            print(e)
-            c = 1
-            print("Elapsed time counter max reached. Resetting to 1.")
-        for cmd in d.tickEvents:
-            yield from d.cmd.tick(client, d, cmd)
+            if c != 0:
+                t = 60.0 - datetime.datetime.now().minute
+                yield from asyncio.sleep(float(t*60.0))
+            else:
+                c = 1
+            print("Elapsed time: (" + str(c) + ")")
+            try:
+                c += 1
+            except Exception as e:
+                print(e)
+                c = 1
+                print("Elapsed time counter max reached. Resetting to 1.")
+            for cmd in d.tickEvents:
+                yield from d.cmd.tick(client, d, cmd)
+        except Exception:
+            print(traceback.format_exc(limit=0))
 
 
 @client.event
