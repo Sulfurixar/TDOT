@@ -97,17 +97,19 @@ class cookie(object):
 
     def update_user(self, u_data):
         default = self.userExample
+        if 'cookies' not in u_data:
+            u_data['cookies'] = {}
         for key in default:
             if key not in u_data:
-                u_data[key] = default[key]
+                u_data['cookies'][key] = default[key]
             if key == 'get' or key == 'give':
                 for key2 in default[key]:
                     if key2 not in u_data[key]:
-                        u_data[key][key2] = default[key][key2]
+                        u_data['cookies'][key][key2] = default[key][key2]
                         if key == 'status':
                             for key3 in default[key][key2]:
-                                if key3 not in u_data[key][key2]:
-                                    u_data[key][key2][key3] = default[key][key2][key3]
+                                if key3 not in u_data['cookies'][key][key2]:
+                                    u_data['cookies'][key][key2][key3] = default[key][key2][key3]
         return u_data
 
     @staticmethod
@@ -115,57 +117,60 @@ class cookie(object):
         pprint.pprint(u_data)
         # - UPDATE CURRENT STATE
         ###############################################################################################
-        if u_data['status']['active']['active'] == 'True':
-            if u_data['give']['cycle'] == 0 or u_data['get']['cycle'] == 0:
+        status = u_data['cookies']['status']
+        if status['active']['active'] == 'True':
+            if u_data['cookies']['give']['cycle'] == 0 or u_data['get']['cycle'] == 0:
                 if member.status is discord.Status.offline:
-                    u_data['status']['active']['active'] = False
-                    u_data['status']['inactive']['active'] = True
-                    u_data['status']['inactive']['date'] = curdate.strftime('%Y-%m-%d %H')
-        if u_data['status']['inactive']['active'] == 'True':
-            if u_data['give']['cycle'] > 0 or u_data['get']['cycle'] > 0 or \
+                    status['active']['active'] = False
+                    status['inactive']['active'] = True
+                    status['inactive']['date'] = curdate.strftime('%Y-%m-%d %H')
+        if status['inactive']['active'] == 'True':
+            if u_data['cookies']['give']['cycle'] > 0 or u_data['get']['cycle'] > 0 or \
                     member.status is not discord.Status.offline:
-                u_data['status']['inactive']['active'] = False
-                u_data['status']['frozen']['active'] = False
-                u_data['status']['active']['active'] = True
-                u_data['status']['active']['date'] = curdate.strftime('%Y-%m-%d %H')
+                status['inactive']['active'] = False
+                status['frozen']['active'] = False
+                status['active']['active'] = True
+                status['active']['date'] = curdate.strftime('%Y-%m-%d %H')
             else:
-                d1 = u_data['status']['inactive']['date'].strptime('%Y-%m-%d %H')
+                d1 = status['inactive']['date'].strptime('%Y-%m-%d %H')
                 d = curdate - d1
-                if d.days >= 28 and not u_data['status']['frozen']['active'] == 'True':
-                    u_data['status']['frozen']['active'] = True
+                if d.days >= 28 and not status['frozen']['active'] == 'True':
+                    status['frozen']['active'] = True
         ################################################################################################
 
         # - UPDATE CYCLES
         #########################################################################
-        if u_data['status']['active']['active'] == 'True':
-            u_data['active_cycles'][0] += 1
-            if u_data['active_cycles'][0] % 672 == 0:
-                u_data['active_cycles'] = [0, u_data['active_cycles'][1] + 1]
-        if u_data['status']['inactive']['active'] == 'True':
-            u_data['inactive_cycles'][0] += 1
-            if u_data['inactive_cycles'][0] % 672 == 0:
-                u_data['inactive_cycles'] = [0, u_data['inactive_cycles'][1] + 1]
+        if status['active']['active'] == 'True':
+            u_data['cookies']['active_cycles'][0] += 1
+            if u_data['cookies']['active_cycles'][0] % 672 == 0:
+                u_data['cookies']['active_cycles'] = [0, u_data['cookies']['active_cycles'][1] + 1]
+        if status['inactive']['active'] == 'True':
+            u_data['cookies']['inactive_cycles'][0] += 1
+            if u_data['cookies']['inactive_cycles'][0] % 672 == 0:
+                u_data['cookies']['inactive_cycles'] = [0, u_data['cookies']['inactive_cycles'][1] + 1]
         #########################################################################
 
         # - UPDATE GET/GIVE
         #############################################################################
-        u_data['get']['total'] = u_data['get']['total'] + u_data['get']['cycle']
-        u_data['get']['cycle'] = 0
-        u_data['get']['average'] = \
-            u_data['get']['total'] / \
+        u_data['cookies']['get']['total'] = u_data['cookies']['get']['total'] + u_data['cookies']['get']['cycle']
+        u_data['cookies']['get']['cycle'] = 0
+        u_data['cookies']['get']['average'] = \
+            u_data['cookies']['get']['total'] / \
             (
-                    u_data['active_cycles'][0] + u_data['inactive_cycles'][0] +
-                    672*(u_data['active_cycles'][1] + u_data['inactive_cycles'][1])
+                    u_data['cookies']['active_cycles'][0] + u_data['cookies']['inactive_cycles'][0] +
+                    672*(u_data['cookies']['active_cycles'][1] + u_data['cookies']['inactive_cycles'][1])
             )
-        u_data['give']['total'] = u_data['give']['total'] + u_data['give']['cycle']
-        u_data['give']['cycle'] = 0
-        u_data['give']['average'] = \
-            u_data['give']['total'] / \
+        u_data['cookies']['give']['total'] = u_data['cookies']['give']['total'] + u_data['cookies']['give']['cycle']
+        u_data['cookies']['give']['cycle'] = 0
+        u_data['cookies']['give']['average'] = \
+            u_data['cookies']['give']['total'] / \
             (
-                    u_data['active_cycles'][0] + u_data['inactive_cycles'][0] +
-                    672 * (u_data['active_cycles'][1] + u_data['inactive_cycles'][1])
+                    u_data['cookies']['active_cycles'][0] + u_data['cookies']['inactive_cycles'][0] +
+                    672 * (u_data['cookies']['active_cycles'][1] + u_data['cookies']['inactive_cycles'][1])
             )
         #############################################################################
+
+        u_data['cookies']['status'] = status
 
         return u_data
 
@@ -195,14 +200,14 @@ class cookie(object):
             c = len(members)
             for member in members:
                 u_data = self.update_user(data.c.get_user_data(member))
-                cookies_this_cycle += u_data['get']['cycle']
+                cookies_this_cycle += u_data['cookies']['get']['cycle']
 
                 u_data = self.update_user_data(u_data, member, curdate)
 
-                total_cookies += u_data['get']['total']
-                average_average += u_data['give']['average']
-                total_active += u_data['active_cycles']
-                total_inactive += u_data['inactive_cycles']
+                total_cookies += u_data['cookies']['get']['total']
+                average_average += u_data['cookies']['give']['average']
+                total_active += u_data['cookies']['active_cycles']
+                total_inactive += u_data['cookies']['inactive_cycles']
 
                 data.c.set_user_data(member, u_data=u_data)
 
