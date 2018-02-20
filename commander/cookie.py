@@ -184,7 +184,7 @@ class cookie(object):
                 data.servers[server].custom_data['cookies'] = self.configExample
                 conf = data.servers[server].custom_data['cookies']
             else:
-                conf = self.update(data.servers[server].custom_data['cookies'])
+                conf = self.update_config(data.servers[server].custom_data['cookies'])
             ####################################################################
             s = client.get_server(server)
             if s.large:
