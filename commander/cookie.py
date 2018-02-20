@@ -113,13 +113,13 @@ class cookie(object):
     def update_user_data(u_data, member, curdate):
         # - UPDATE CURRENT STATE
         ###############################################################################################
-        if u_data['status']['active']['active']:
+        if u_data['status']['active']['active'] == 'True':
             if u_data['give']['cycle'] == 0 or u_data['get']['cycle'] == 0:
                 if member.status is discord.Status.offline:
                     u_data['status']['active']['active'] = False
                     u_data['status']['inactive']['active'] = True
                     u_data['status']['inactive']['date'] = curdate.strftime('%Y-%m-%d %H')
-        if u_data['status']['inactive']['active']:
+        if u_data['status']['inactive']['active'] == 'True':
             if u_data['give']['cycle'] > 0 or u_data['get']['cycle'] > 0 or \
                     member.status is not discord.Status.offline:
                 u_data['status']['inactive']['active'] = False
@@ -129,17 +129,17 @@ class cookie(object):
             else:
                 d1 = u_data['status']['inactive']['date'].strptime('%Y-%m-%d %H')
                 d = curdate - d1
-                if d.days >= 28 and not u_data['status']['frozen']['active']:
+                if d.days >= 28 and not u_data['status']['frozen']['active'] == 'True':
                     u_data['status']['frozen']['active'] = True
         ################################################################################################
 
         # - UPDATE CYCLES
         #########################################################################
-        if u_data['status']['active']['active']:
+        if u_data['status']['active']['active'] == 'True':
             u_data['active_cycles'][0] += 1
             if u_data['active_cycles'][0] % 672 == 0:
                 u_data['active_cycles'] = [0, u_data['active_cycles'][1] + 1]
-        if u_data['status']['inactive']['active']:
+        if u_data['status']['inactive']['active'] == 'True':
             u_data['inactive_cycles'][0] += 1
             if u_data['inactive_cycles'][0] % 672 == 0:
                 u_data['inactive_cycles'] = [0, u_data['inactive_cycles'][1] + 1]
