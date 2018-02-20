@@ -2,6 +2,7 @@ import asyncio
 import os
 import discord
 import datetime
+import pprint
 
 
 class cookie(object):
@@ -111,6 +112,7 @@ class cookie(object):
 
     @staticmethod
     def update_user_data(u_data, member, curdate):
+        pprint.pprint(u_data)
         # - UPDATE CURRENT STATE
         ###############################################################################################
         if u_data['status']['active']['active'] == 'True':
