@@ -279,7 +279,7 @@ def ticker():
             for cmd in d.tickEvents:
                 yield from d.cmd.tick(client, d, cmd)
         except Exception:
-            print(traceback.format_exc(limit=2))
+            print(traceback.format_exc(limit=5))
 
 
 @client.event
