@@ -154,20 +154,19 @@ class cookie(object):
         #############################################################################
         u_data['cookies']['get']['total'] = u_data['cookies']['get']['total'] + u_data['cookies']['get']['cycle']
         u_data['cookies']['get']['cycle'] = 0
+        div = u_data['cookies']['active_cycles'][0] + u_data['cookies']['inactive_cycles'][0] +\
+            672*(u_data['cookies']['active_cycles'][1] + u_data['cookies']['inactive_cycles'][1])
+        if div == 0:
+            div += 1
         u_data['cookies']['get']['average'] = \
-            u_data['cookies']['get']['total'] / \
-            (
-                    u_data['cookies']['active_cycles'][0] + u_data['cookies']['inactive_cycles'][0] +
-                    672*(u_data['cookies']['active_cycles'][1] + u_data['cookies']['inactive_cycles'][1])
-            )
+            u_data['cookies']['get']['total'] / div
         u_data['cookies']['give']['total'] = u_data['cookies']['give']['total'] + u_data['cookies']['give']['cycle']
         u_data['cookies']['give']['cycle'] = 0
-        u_data['cookies']['give']['average'] = \
-            u_data['cookies']['give']['total'] / \
-            (
-                    u_data['cookies']['active_cycles'][0] + u_data['cookies']['inactive_cycles'][0] +
-                    672 * (u_data['cookies']['active_cycles'][1] + u_data['cookies']['inactive_cycles'][1])
-            )
+        div = u_data['cookies']['active_cycles'][0] + u_data['cookies']['inactive_cycles'][0] + \
+            672*(u_data['cookies']['active_cycles'][1] + u_data['cookies']['inactive_cycles'][1])
+        if div == 0:
+            div += 1
+        u_data['cookies']['give']['average'] = u_data['cookies']['give']['total'] / div
         #############################################################################
 
         u_data['cookies']['status'] = status
@@ -217,11 +216,10 @@ class cookie(object):
             if conf['analytics']['cycleCount'][0] % 672 == 0:
                 conf['analytics']['cycleCount'][0] = 0
                 conf['analytics']['cycleCount'][1] += 1
-            conf['analytics']['cookieAveragePerCycle'] = total_cookies / \
-                                                         (
-                                                                 conf['analytics']['cycleCount'][0] +
-                                                                 672*conf['analytics']['cycleCount'][1]
-                                                         )
+                div = (conf['analytics']['cycleCount'][0] + 672*conf['analytics']['cycleCount'][1])
+                if div == 0:
+                    div += 1
+            conf['analytics']['cookieAveragePerCycle'] = total_cookies / div
             conf['analytics']['totalActiveCycles'] = total_active
             conf['analytics']['totalInactiveCycles'] = total_inactive
 
