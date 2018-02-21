@@ -216,9 +216,9 @@ class cookie(object):
             if conf['analytics']['cycleCount'][0] % 672 == 0:
                 conf['analytics']['cycleCount'][0] = 0
                 conf['analytics']['cycleCount'][1] += 1
-                div = (conf['analytics']['cycleCount'][0] + 672*conf['analytics']['cycleCount'][1])
-                if div == 0:
-                    div += 1
+            div = (conf['analytics']['cycleCount'][0] + 672*conf['analytics']['cycleCount'][1])
+            if div == 0:
+                div += 1
             conf['analytics']['cookieAveragePerCycle'] = total_cookies / div
             conf['analytics']['totalActiveCycles'] = total_active
             conf['analytics']['totalInactiveCycles'] = total_inactive
