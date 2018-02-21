@@ -199,7 +199,7 @@ class Data(object):
                     mesg = yield from client.send_message(
                         msg.channel,
                         '',
-                        embed=self.embedder([['Error', 'No message was given to messager!']])
+                        embed=self.embedder([['Error', 'No message was given to messager!'], ['Message:', msg.content]])
                     )
                     archive.append(mesg)
                 except Exception as e:
@@ -308,7 +308,7 @@ def prep_cmd(cmd, msg):
                     ["**Command Execution:**", '``' + msg.content + '``'],
                     ["**User:**", "Name: " + msg.author.display_name + "\n<@" + msg.author.id + ">"]
                 ])
-                print(embed.to_dict())
+                #print(embed.to_dict())
                 yield from client.send_message(s.command_channel[2], embed=embed)
     elif msg.content in d.answers and msg.server == d.servers[d.answers[msg.content]]:
         s = d.servers[d.answers[msg.content]]
