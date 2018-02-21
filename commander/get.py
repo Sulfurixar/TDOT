@@ -54,7 +54,7 @@ class get(object):
                     s += '\t'
                     c += 1
             for e in lists:
-                s += '' + self.unlist(e, t=t) + '\n'
+                s += '' + str(self.unlist(e, t=t)) + '\n'
         else:
             return lists
         return s
