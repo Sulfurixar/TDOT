@@ -44,7 +44,7 @@ class get(object):
                     while t > c:
                         s += '\t'
                         c += 1
-                s += '' + e + ': ' + self.unlist(lists[e], t=t) + '\n'
+                s += '' + e + ': ' + str(self.unlist(lists[e], t=t)) + '\n'
         elif type(lists) == type([]):
             lists.reverse()
             c = 0
