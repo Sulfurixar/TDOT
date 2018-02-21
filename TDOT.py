@@ -308,6 +308,7 @@ def prep_cmd(cmd, msg):
                     ["**Command Execution:**", '``' + msg.content + '``'],
                     ["**User:**", "Name: " + msg.author.display_name + "\n<@" + msg.author.id + ">"]
                 ])
+                print(embed.to_dict())
                 yield from client.send_message(s.command_channel[2], embed=embed)
     elif msg.content in d.answers and msg.server == d.servers[d.answers[msg.content]]:
         s = d.servers[d.answers[msg.content]]
@@ -363,11 +364,9 @@ def on_message_delete(msg):
         s = d.servers[s]
         if s.message_delete_logging and s.delete_channel != ['', ''] and s.active and s.delete_channel[2] != msg.channel:
             if msg.author.id in d.dmessages:
-                if len(d.dmessages[msg.author.id]) > 0:
-                    for message in d.dmessages[msg.author.id]:
-                        if msg.type == type(message):
-                            if msg.content == message.content:
-                                return
+                if msg.type == type(d.dmessages[msg.author.id]):
+                    if msg.content == d.dmessages[msg.msg.author.id].content:
+                        return
             embed = d.embedder([[
                 '**Detected message deletion:**', 'Deleted message owned by: <@' + msg.author.id + '> ' +
                 msg.author.display_name + ':' + msg.author.id + '\nContents: \'' + msg.content + '\'\nTime: ' +
