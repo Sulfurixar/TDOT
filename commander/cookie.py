@@ -208,7 +208,7 @@ class cookie(object):
                 total_active += u_data['cookies']['active_cycles'][0] + 672*u_data['cookies']['active_cycles'][1]
                 total_inactive += u_data['cookies']['inactive_cycles'][0] + 672*u_data['cookies']['inactive_cycles'][1]
 
-                data.c.set_user_data(member, u_data=u_data)
+                data.c.set_user_data(member, data=u_data)
 
             conf['analytics']['totalCookies'] = total_cookies
             conf['analytics']['cookiesThisCycle'] = cookies_this_cycle
