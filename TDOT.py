@@ -372,6 +372,7 @@ def on_message_delete(msg):
                 msg.author.display_name + ':' + msg.author.id + '\nContents: \'' + msg.content + '\'\nTime: ' +
                 str(datetime.datetime.now()) + '\nChannel: ``' + msg.channel.name + ":" + msg.channel.id + "``"
             ]])
+            print(embed.to_dict())
             yield from client.send_message(s.delete_channel[2], '_   _', embed=embed)
             if len(msg.embeds) > 0:
                 yield from client.send_message(s.delete_channel[2], "It had embed(s) with it:")
