@@ -114,7 +114,7 @@ class cookie(object):
 
     @staticmethod
     def update_user_data(u_data, member, curdate):
-        pprint.pprint(u_data)
+        pprint.pprint(u_data.encode('utf-8'))
         # - UPDATE CURRENT STATE
         ###############################################################################################
         status = u_data['cookies']['status']
