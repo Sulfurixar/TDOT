@@ -224,7 +224,7 @@ class Config(object):
             if user.game.url is not None:
                 w['game'] += ':' + user.game.url
             if user.game.type is not None:
-                w['game'] += ':' + user.game.type
+                w['game'] += ':' + str(user.game.type)
         return w
 
     def get_user_data(self, user):

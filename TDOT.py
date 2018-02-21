@@ -196,12 +196,13 @@ class Data(object):
         else:
             if self.perms._user(self, client.user, [msg.channel, 'send messages']):
                 try:
-                    mesg = yield from client.send_message(
-                        msg.channel,
-                        '',
-                        embed=self.embedder([['Error', 'No message was given to messager!'], ['Message:', msg.content]])
-                    )
-                    archive.append(mesg)
+                    # mesg = yield from client.send_message(
+                    #     msg.channel,
+                    #     '',
+                    #     embed=self.embedder([['Error', 'No message was given to messager!'], ['Message:', msg.content]])
+                    # )
+                    # archive.append(mesg)
+                    pass
                 except Exception as e:
                     error = self.embedder([["**Error:**", str(e)]])
                     yield from client.send_message(msg.author, '...', embed=error)
@@ -372,7 +373,7 @@ def on_message_delete(msg):
                 msg.author.display_name + ':' + msg.author.id + '\nContents: \'' + msg.content + '\'\nTime: ' +
                 str(datetime.datetime.now()) + '\nChannel: ``' + msg.channel.name + ":" + msg.channel.id + "``"
             ]])
-            print(embed.to_dict())
+            #print(embed.to_dict())
             yield from client.send_message(s.delete_channel[2], '_   _', embed=embed)
             if len(msg.embeds) > 0:
                 yield from client.send_message(s.delete_channel[2], "It had embed(s) with it:")
