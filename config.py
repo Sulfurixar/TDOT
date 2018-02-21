@@ -216,7 +216,15 @@ class Config(object):
         for r in user.roles:
             w['roles'][r.id] = r.name.replace('@', '')
         if user.game is not None:
-            w['game'] = user.game.name + ':' + user.game.url + ':' + user.game.type
+            w['game'] = ''
+            if user.game.name is not None:
+                w['game'] = user.game.name
+            else:
+                w['game'] = ''
+            if user.game.url is not None:
+                w['game'] += ':' + user.game.url
+            if user.game.type is not None:
+                w['game'] += ':' + user.game.type
         return w
 
     def get_user_data(self, user):
