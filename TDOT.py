@@ -428,7 +428,7 @@ def on_member_join(member):
                             yield from client.add_roles(u, r)
                             c += 1
                         ms += "Added ``" + r.name + "`` to ``" + u.name + "`` [" + str(u.id) + "].\n"
-                if s.joinChannel != ['', '']:
+                if s.join_channel != ['', '']:
                     embed = discord.Embed()
                     icon = client.user.avatar_url
                     embed.colour = 0xFFE83C
@@ -445,7 +445,10 @@ def on_member_join(member):
                             value='``'+u.name+':'+str(u.id)+'`` -> <@' + str(u.id) + '>'
                         )
                         yield from client.send_message(s.join_channel[2], embed=embed)
-                    yield from client.send_message(member, "Permissions granted!")
+                    try:
+                        yield from client.send_message(member, "Permissions granted!")
+                    except Exception as e:
+                        print(e)
 
 
 @client.event
