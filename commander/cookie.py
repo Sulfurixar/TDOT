@@ -1,8 +1,9 @@
 import asyncio
-import os
 import discord
 import datetime
 import pprint
+import copy
+import numpy as np
 
 
 class cookie(object):
@@ -57,7 +58,8 @@ class cookie(object):
                 "cookieChargeMax": 0,
                 "cookieChargeOptimal": 0,
                 "totalActiveCycles": 0,
-                "totalInactiveCycles": 0
+                "totalInactiveCycles": 0,
+                "cookieBaseMultiplier": 0
             }
         }
 
@@ -95,8 +97,8 @@ class cookie(object):
                         conf[key][key2] = default[key][key2]
         return conf
 
-    def update_user(self, u_data):
-        default = self.userExample
+    def update_user(self, u_data, data):
+        default = copy.deepcopy(self.userExample)
         if 'cookies' not in u_data:
             u_data['cookies'] = {}
         for key in default:
@@ -110,22 +112,22 @@ class cookie(object):
                             for key3 in default[key][key2]:
                                 if key3 not in u_data['cookies'][key][key2]:
                                     u_data['cookies'][key][key2][key3] = default[key][key2][key3]
+
         return u_data
 
-    @staticmethod
-    def update_user_data(u_data, member, curdate):
-        pprint.pprint(str(u_data).encode('utf-8'))
+    def update_user_data(self, data, member, curdate):
+        # pprint.pprint(str(u_data).encode('utf-8'))
         # - UPDATE CURRENT STATE
         ###############################################################################################
-        status = u_data['cookies']['status']
+        status = data['cookies']['status']
         if status['active']['active'] == 'True':
-            if u_data['cookies']['give']['cycle'] == 0 or u_data['get']['cycle'] == 0:
+            if data['cookies']['give']['cycle'] == 0 or data['get']['cycle'] == 0:
                 if member.status is discord.Status.offline:
                     status['active']['active'] = False
                     status['inactive']['active'] = True
                     status['inactive']['date'] = curdate.strftime('%Y-%m-%d %H')
         if status['inactive']['active'] == 'True':
-            if u_data['cookies']['give']['cycle'] > 0 or u_data['get']['cycle'] > 0 or \
+            if data['cookies']['give']['cycle'] > 0 or data['get']['cycle'] > 0 or \
                     member.status is not discord.Status.offline:
                 status['inactive']['active'] = False
                 status['frozen']['active'] = False
@@ -136,53 +138,80 @@ class cookie(object):
                 d = curdate - d1
                 if d.days >= 28 and not status['frozen']['active'] == 'True':
                     status['frozen']['active'] = True
-        ################################################################################################
 
-        u_data['cookies']['status'] = status
+        data['status'] = status
+        ################################################################################################
 
         # - UPDATE CYCLES
         #########################################################################
-        if status['active']['active'] == 'True':
-            u_data['cookies']['active_cycles'][0] += 1
-            if u_data['cookies']['active_cycles'][0] > 672:
-                u_data['cookies']['active_cycles'] = [0, u_data['cookies']['active_cycles'][1] + 1]
-        if status['inactive']['active'] == 'True':
-            u_data['cookies']['inactive_cycles'][0] += 1
-            if u_data['cookies']['inactive_cycles'][0] > 672:
-                u_data['cookies']['inactive_cycles'] = [0, u_data['cookies']['inactive_cycles'][1] + 1]
+        # print('active: ' + str(status['active']['active']))
+        if status['active']['active']:
+            data['cookies']['active_cycles'][0] += 1
+            if data['cookies']['active_cycles'][0] > 672:
+                data['cookies']['active_cycles'] = [0, data['cookies']['active_cycles'][1] + 1]
+            # print('ac_c: ' + str(data['cookies']['active_cycles']))
+        # print('inactive: ' + str(status['inactive']['active']))
+        if status['inactive']['active']:
+            data['cookies']['inactive_cycles'][0] += 1
+            if data['cookies']['inactive_cycles'][0] > 672:
+                data['cookies']['inactive_cycles'] = [0, data['cookies']['inactive_cycles'][1] + 1]
+            # print('ic_c: ' + str(data['cookies']['inactive_cycles']))
         #########################################################################
 
         # - UPDATE GET/GIVE
         #############################################################################
-        u_data['cookies']['get']['total'] = u_data['cookies']['get']['total'] + u_data['cookies']['get']['cycle']
-        u_data['cookies']['get']['cycle'] = 0
-        div = u_data['cookies']['active_cycles'][0] + u_data['cookies']['inactive_cycles'][0] +\
-            672*(u_data['cookies']['active_cycles'][1] + u_data['cookies']['inactive_cycles'][1])
-        if div == 0:
-            div += 1
-        u_data['cookies']['get']['average'] = \
-            u_data['cookies']['get']['total'] / div
-        u_data['cookies']['give']['total'] = u_data['cookies']['give']['total'] + u_data['cookies']['give']['cycle']
-        u_data['cookies']['give']['cycle'] = 0
-        div = u_data['cookies']['active_cycles'][0] + u_data['cookies']['inactive_cycles'][0] + \
-            672*(u_data['cookies']['active_cycles'][1] + u_data['cookies']['inactive_cycles'][1])
-        if div == 0:
-            div += 1
-        u_data['cookies']['give']['average'] = u_data['cookies']['give']['total'] / div
+        data['cookies']['get']['total'] = data['cookies']['get']['total'] + data['cookies']['get']['cycle']
+        data['cookies']['get']['cycle'] = 0
+        div = data['cookies']['active_cycles'][0] + data['cookies']['inactive_cycles'][0] +\
+            672*(data['cookies']['active_cycles'][1] + data['cookies']['inactive_cycles'][1])
+        if div == 0 or div is None:
+            div = 1
+        data['cookies']['get']['average'] = \
+            data['cookies']['get']['total'] / div
+        data['cookies']['give']['total'] = data['cookies']['give']['total'] + data['cookies']['give']['cycle']
+        data['cookies']['give']['cycle'] = 0
+        div = data['cookies']['active_cycles'][0] + data['cookies']['inactive_cycles'][0] + \
+            672*(data['cookies']['active_cycles'][1] + data['cookies']['inactive_cycles'][1])
+        if div == 0 or div is None:
+            div = 1
+        data['cookies']['give']['average'] = data['cookies']['give']['total'] / div
         #############################################################################
 
-        return u_data
+        return data
+
+    def member_handle(self, members, data):
+        cookies_this_cycle = 0
+        total_cookies = 0
+        average_average = 0
+        total_active = 0
+        total_inactive = 0
+        curdate = datetime.datetime.now()
+
+        for member in members:
+            # - GET DATA
+            #######################################################################################################
+            u_data = self.update_user(data.c.get_user_data(member), data)
+            cookies_this_cycle += u_data['cookies']['get']['cycle']
+
+            u2_data = self.update_user_data(u_data, member, curdate)
+            # print('updates: ' + str(u_data))
+
+            total_cookies += u2_data['cookies']['get']['total']
+            average_average += u2_data['cookies']['give']['average']
+            total_active += u2_data['cookies']['active_cycles'][0] + 672 * u2_data['cookies']['active_cycles'][1]
+            total_inactive += u2_data['cookies']['inactive_cycles'][0] + 672 * u2_data['cookies']['inactive_cycles'][1]
+            #######################################################################################################
+
+            # - UPDATE USER DATA
+            #######################################################
+            data.c.set_user_data(member, data=u2_data)
+            #######################################################
+
+        return total_cookies, average_average, total_active, total_inactive, cookies_this_cycle
 
     @asyncio.coroutine
     def ticker(self, client, data):
-        curdate = datetime.datetime.now()
         for server in data.servers:
-
-            cookies_this_cycle = 0
-            total_cookies = 0
-            average_average = 0
-            total_active = 0
-            total_inactive = 0
 
             # - COOKIE ANALYTICS IN CONFIG.JSON
             ####################################################################
@@ -196,19 +225,9 @@ class cookie(object):
             if s.large:
                 yield from client.request_offline_members(s)
             members = s.members
-            c = len(members)
-            for member in members:
-                u_data = self.update_user(data.c.get_user_data(member))
-                cookies_this_cycle += u_data['cookies']['get']['cycle']
 
-                u_data = self.update_user_data(u_data, member, curdate)
-
-                total_cookies += u_data['cookies']['get']['total']
-                average_average += u_data['cookies']['give']['average']
-                total_active += u_data['cookies']['active_cycles'][0] + 672*u_data['cookies']['active_cycles'][1]
-                total_inactive += u_data['cookies']['inactive_cycles'][0] + 672*u_data['cookies']['inactive_cycles'][1]
-
-                data.c.set_user_data(member, data=u_data)
+            total_cookies, average_average, \
+                total_active, total_inactive, cookies_this_cycle = self.member_handle(members, data)
 
             conf['analytics']['totalCookies'] = total_cookies
             conf['analytics']['cookiesThisCycle'] = cookies_this_cycle
@@ -218,10 +237,18 @@ class cookie(object):
                 conf['analytics']['cycleCount'][1] += 1
             div = (conf['analytics']['cycleCount'][0] + 672*conf['analytics']['cycleCount'][1])
             if div == 0:
-                 div += 1
+                div += 1
             conf['analytics']['cookieAveragePerCycle'] = total_cookies / div
             conf['analytics']['totalActiveCycles'] = total_active
             conf['analytics']['totalInactiveCycles'] = total_inactive
+
+            a = data.servers[server].serve.member_count
+            c = np.log(a)/np.log((total_cookies**0.25) + 2)
+            b = (a*2)**c
+            d = 2*(total_cookies**0.75) + 1
+            e = b/d
+
+            conf['analytics']['cookieBaseMultiplier'] = e
 
             #TODO: cookie charge max, cookie charge optimal
 
@@ -229,14 +256,29 @@ class cookie(object):
     def reactor(self, client, reaction, user, data):
         msg = reaction.message
         emoji = reaction.emoji
+        if type(emoji) is str:
+            e_name = emoji
+        else:
+            try:
+                e_name = '<:' + emoji.name + ':' + emoji.id + '>'
+            except:
+                e_name = None
         react = False
         if 'cookie' in data.servers[msg.server.id].custom_data:
             if 'default' in data.servers[msg.server.id].custom_data['cookie']:
-                if emoji == data.servers[msg.server.id].custom_data['cookie']['default']:
+                if e_name == data.servers[msg.server.id].custom_data['cookie']['default']:
                     react = True
         if react:
             u1 = user
             u2 = msg.author
+            if u1 != u2:
+                u_data = self.update_user(data.c.get_user_data(u1), data)
+                u_data['cookies']['give']['cycle'] += 1
+                data.c.set_user_data(u1, data=u_data)
+                u_data = self.update_user(data.c.get_user_data(u2), data)
+                u_data['cookies']['get']['cycle'] += 1
+                data.c.set_user_data(u2, data=u_data)
+
 
     @asyncio.coroutine
     def execute(self, client, msg, data, args):
@@ -295,15 +337,28 @@ class cookie(object):
                                 msg.channel
                             ])
                         else:
-                            if '<' in c:
-                                s = c.split(':')
-                                c = s[1]
-                            if 'cookie' in data.servers[msg.server.id].custom_data:
-                                data.servers[msg.server.id].custom_data['cookie']['default'] = c
-                            else:
-                                data.servers[msg.server.id].custom_data['cookie'] = {'default': c}
-                            data.servers[msg.server.id].update(client)
-                            results.append(['', data.embedder([['Updated cookie:', c]]), msg.channel])
+                            if ':' in c:
+                                a = c.split(':')
+                                if len(a) != 3:
+                                    results.append([
+                                        '',
+                                        data.embedder([[
+                                            'Invalid input for cookie emoji!', 'Invalid input: ' + str(c)
+                                        ]]),
+                                        msg.channel
+                                    ])
+                                else:
+                                    cooki = c
+                                    if 'cookie' in data.servers[msg.server.id].custom_data:
+                                        data.servers[msg.server.id].custom_data['cookie']['default'] = cooki
+                                    else:
+                                        data.servers[msg.server.id].custom_data['cookie'] = {'default': cooki}
+                                    data.servers[msg.server.id].update(client)
+                                    results.append([
+                                        '',
+                                        data.embedder([['Updated cookie:', cooki]]),
+                                        msg.channel
+                                    ])
                 #############################################################################
                 argpos += 1
             yield from data.messager(msg, results)

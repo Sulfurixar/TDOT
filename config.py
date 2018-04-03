@@ -264,8 +264,18 @@ class Config(object):
         u_path = os.path.join(s_path, user.id + '.json')
         w = self.get_user_data(user)
         if data is not None and len(data) > 0:
+            # print('>' + user.name + ':' + str(w) + '\n/////////////////\n' + str(w) + '\n////////////////////////')
             for key in data:
+                """try:
+                    print(key + '(w): ' + str(w[key]))
+                except:
+                    print(key + '(w): None')
+                print(key + '(data): ' + str(data[key]))"""
                 w[key] = data[key]
+                """try:
+                    print(key + '(w) 2: ' + str(w[key]))
+                except:
+                    print(key + '(w) 2: None')"""
         if user.name not in w['name']:
             w['name'].append(user.name)
         if user.nick not in w['nick']:

@@ -133,7 +133,8 @@ class Data(object):
                 base = self.base_help(None, _cmd.description)
                 cmds = ''
                 for cmd in self.cmds:
-                    cmds += '``' + cmd + '`` '
+                    if cmd != 'nuke':
+                        cmds += '``' + cmd + '`` '
                 return [[
                     '',
                     self.embedder([
