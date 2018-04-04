@@ -120,13 +120,13 @@ class cookie(object):
         # - UPDATE CURRENT STATE
         ###############################################################################################
         status = data['cookies']['status']
-        if status['active']['active'] == 'True':
+        if str(status['active']['active']) == 'True':
             if data['cookies']['give']['cycle'] == 0 or data['get']['cycle'] == 0:
                 if member.status is discord.Status.offline:
                     status['active']['active'] = False
                     status['inactive']['active'] = True
                     status['inactive']['date'] = curdate.strftime('%Y-%m-%d %H')
-        if status['inactive']['active'] == 'True':
+        if str(status['inactive']['active']) == 'True':
             if data['cookies']['give']['cycle'] > 0 or data['get']['cycle'] > 0 or \
                     member.status is not discord.Status.offline:
                 status['inactive']['active'] = False
