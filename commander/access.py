@@ -7,7 +7,7 @@ class access(object):
     def __init__(self):
         self.description = 'Used to gain access to special roles or channels.'
         self.permissions = []
-        self.Owner = True
+        self.Owner = False
         self.bOwner = False
         self.name = 'access'
         self.tick = False
