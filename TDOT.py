@@ -189,8 +189,8 @@ class Data(object):
                         yield from client.send_message(msg.author, '...', embed=error)
                 else:
                     error = self.embedder([[
-                        "**Insufficient Permissions:**", "Unable to send message to ``" + message[2].server.name + ":" +
-                        message[2].server.id + ">" + message[2].channel.name + ":" + message[2].channel.id +
+                        "**Insufficient Permissions:**", "Unable to send message to ``" + messag[2].server.name + ":" +
+                        messag[2].server.id + ">" + messag[2].channel.name + ":" + messag[2].channel.id +
                         "`` - 'send messages'."
                     ]])
                     yield from client.send_message(msg.author, '...', embed=error)

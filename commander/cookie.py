@@ -121,20 +121,22 @@ class cookie(object):
         ###############################################################################################
         status = data['cookies']['status']
         if str(status['active']['active']) == 'True':
-            if data['cookies']['give']['cycle'] == 0 or data['get']['cycle'] == 0:
-                if member.status is discord.Status.offline:
-                    status['active']['active'] = False
-                    status['inactive']['active'] = True
-                    status['inactive']['date'] = curdate.strftime('%Y-%m-%d %H')
+            if data['cookies']['give']['cycle'] == 0 or data['cookies']['get']['cycle'] == 0 or \
+                    member.status is discord.Status.offline:
+                #print('active/' + str(member.status))
+                status['active']['active'] = False
+                status['inactive']['active'] = True
+                status['inactive']['date'] = curdate.strftime('%Y-%m-%d %H')
         if str(status['inactive']['active']) == 'True':
-            if data['cookies']['give']['cycle'] > 0 or data['get']['cycle'] > 0 or \
+            if data['cookies']['give']['cycle'] > 0 or data['cookies']['get']['cycle'] > 0 or \
                     member.status is not discord.Status.offline:
+                #print('inactive/' + str(member.status))
                 status['inactive']['active'] = False
                 status['frozen']['active'] = False
                 status['active']['active'] = True
                 status['active']['date'] = curdate.strftime('%Y-%m-%d %H')
             else:
-                d1 = status['inactive']['date'].strptime('%Y-%m-%d %H')
+                d1 = datetime.datetime.strptime(status['inactive']['date'], '%Y-%m-%d %H')
                 d = curdate - d1
                 if d.days >= 28 and not status['frozen']['active'] == 'True':
                     status['frozen']['active'] = True

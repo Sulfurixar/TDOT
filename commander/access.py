@@ -25,7 +25,14 @@ class access(object):
                 'Displays the config for this server.\n' +
                 'How to use this command: ``e!access show``\n' +
                 'For Example: ``e!access show``.',
-            
+            'add':
+                'Adds an item to the access config.\n' +
+                'How to use this command: ``e!access add {"item name":{"channel/role":"id"}}``\n' +
+                'For Example: ``e!access add {"book-club":{"channel":"1234567890"}}``',
+            'remove':
+                'Remove an item from the access config.\n' +
+                'How to use this command: ``e!access remove item_name``\n' +
+                'For Example: ``e!access remove book-club``'
         }
 
     @asyncio.coroutine
@@ -203,6 +210,74 @@ class access(object):
                             else:
                                 for r in res:
                                     results.append(r)
+                    ##########################
+                    if arg.lower() == 'add':
+                        skip = len(args[argpos:])
+                        n_args = args[argpos + 1:]
+                        if not (msg.author.id == msg.server.owner.id or msg.author.id == data.id):
+                            results.append([
+                                '',
+                                data.embedder(
+                                    [[
+                                        '**Error:**',
+                                        'Insufficient permissions: You need to be the owner of ``' + msg.server.name +
+                                        "`` or owner of this Bot to use this command."
+                                    ]],
+                                    colour=data.embed_error
+                                ),
+                                msg.channel
+                            ])
+                        else:
+                            emb, res = data.json(n_args, msg)
+                            if emb is not None:
+                                for key in emb:
+                                    data.servers[msg.server.id].custom_data['access'].append(emb[key])
+                                    results.append([
+                                        '',
+                                        data.embedder([[
+                                            '**Access Data:**',
+                                            str(data.servers[msg.server.id].custom_data['access']).replace("'", '"')]]),
+                                        msg.channel
+                                    ])
+                            else:
+                                for r in res:
+                                    results.append(r)
+                    ##########################
+                    if arg.lower() == 'remove':
+                        skip = 1
+                        n_arg = args[argpos + 1]
+                        if not (msg.author.id == msg.server.owner.id or msg.author.id == data.id):
+                            results.append([
+                                '',
+                                data.embedder(
+                                    [[
+                                        '**Error:**',
+                                        'Insufficient permissions: You need to be the owner of ``' + msg.server.name +
+                                        "`` or owner of this Bot to use this command."
+                                    ]],
+                                    colour=data.embed_error
+                                ),
+                                msg.channel
+                            ])
+                        else:
+                            if n_arg in data.servers[msg.server.id].custom_data['access']:
+                                data.servers[msg.server.id].custom_data['access'].remove(n_arg)
+                                results.append([
+                                    '',
+                                    data.embedder([[
+                                        '**Access Data:**',
+                                        str(data.servers[msg.server.id].custom_data['access']).replace("'", '"')]]),
+                                    msg.channel
+                                ])
+                            else:
+                                results.append([
+                                    '',
+                                    data.embedder([[
+                                        '**Error:**',
+                                        "Couldn't find '" + n_arg + "' in access config..."
+                                    ]]),
+                                    msg.channel
+                                ])
                     ##########################
 ##############################################################################
                 argpos += 1
