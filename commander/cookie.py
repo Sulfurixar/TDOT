@@ -24,7 +24,11 @@ class cookie(object):
             'setcookie':
                 'Sets the default cookie into the specified emoji.\n' +
                 'How to use this command: ``e!cookie setcookie (args)``\n' +
-                'For Example: ``e!cookie setcookie :cookie:`` - sets the default cookie into a cookie.'
+                'For Example: ``e!cookie setcookie :cookie:`` - sets the default cookie into a cookie.',
+            'show':
+                'Displays your cookies for 10 seconds.\n' +
+                'How to use this command: ``e!cookie show``\n' +
+                'For Example: ``e!cookie show`` - shows your cookies.'
         }
         self.userExample = {
             'active_cycles': [0, 0],  # [cycle, epoch]
