@@ -361,6 +361,20 @@ class cookie(object):
                                         data.embedder([['Updated cookie:', cooki]]),
                                         msg.channel
                                     ])
+                ########################################################
+                if arg.lower() == 'show':
+                    u_data = self.update_user(data.c.get_user_data(msg.author), data)
+                    nmsg = yield from client.send_message(
+                        msg.channel,
+                        '',
+                        embed=data.embedder([[
+                            "You currently have:",
+                            str(u_data['cookies']['get']['total']) + ' ' +
+                            data.servers[msg.server.id].custom_data['cookie']['default']
+                        ]])
+                    )
+                    yield from asyncio.sleep(10)
+                    yield from client.delete_message(nmsg)
                 #############################################################################
                 argpos += 1
             yield from data.messager(msg, results)
