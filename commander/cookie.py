@@ -155,10 +155,10 @@ class cookie(object):
                 status['cookieOverload']['active'] = False
             else:
                 status['cookieOverload']['penalty'] = status['cookieOverload']['penalty'] - 0.1
-        if u_data['cookies']['give']['cycle'] > server['cookies']['analytics']['cookieChargeOptimal']:
+        if u_data['cookies']['give']['cycle'] > server['analytics']['cookieChargeOptimal']:
             status['cookieOverload']['active'] = True
             status['cookieOverload']['date'] = curdate.strftime('%Y-%m-%d %H')
-            status['cookieOverload']['penalty'] = server['cookies']['analytics']['cookieChargeMax'] - \
+            status['cookieOverload']['penalty'] = server['analytics']['cookieChargeMax'] - \
                 u_data['cookies']['give']['cycle']
 
         u_data['status'] = status
@@ -215,7 +215,7 @@ class cookie(object):
             u_data = self.update_user(data.c.get_user_data(member), data)
             cookies_this_cycle += u_data['cookies']['get']['cycle']
 
-            u2_data = self.update_user_data(data[server], u_data, member, curdate)
+            u2_data = self.update_user_data(server, u_data, member, curdate)
             # print('updates: ' + str(u_data))
 
             total_cookies += u2_data['cookies']['get']['total']
@@ -249,7 +249,7 @@ class cookie(object):
             members = s.members
 
             total_cookies, average_average, \
-                total_active, total_inactive, cookies_this_cycle = self.member_handle(members, data, server)
+                total_active, total_inactive, cookies_this_cycle = self.member_handle(members, data, conf)
 
             conf['analytics']['totalCookies'] = total_cookies
             conf['analytics']['cookiesThisCycle'] = cookies_this_cycle
