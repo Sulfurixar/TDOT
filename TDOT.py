@@ -354,8 +354,8 @@ def on_message(msg):
     if msg.author.id != client.user.id:
         if (msg.channel.type == discord.ChannelType.text) and (msg.content.startswith(d.c.prefix)):
             yield from prep_cmd(msg.content[len(d.c.prefix):], msg)
-        if msg.channel.type == discord.ChannelType.private:
-            yield from prep_cmd(msg.content, msg)
+        # if msg.channel.type == discord.ChannelType.private:
+        #     yield from prep_cmd(msg.content, msg)
 
 
 @client.event

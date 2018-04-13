@@ -47,6 +47,11 @@ class cookie(object):
                 'frozen': {
                     'date': '',
                     'active': False
+                },
+                'cookieOverload': {
+                    'date': '',
+                    'active': False,
+                    'penalty': 0
                 }
             }
 
@@ -63,7 +68,7 @@ class cookie(object):
                 "cookieChargeOptimal": 0,
                 "totalActiveCycles": 0,
                 "totalInactiveCycles": 0,
-                "cookieBaseMultiplier": 0
+                "cookieBaseMultiplier": 0,
             }
         }
 
@@ -119,20 +124,20 @@ class cookie(object):
 
         return u_data
 
-    def update_user_data(self, data, member, curdate):
+    def update_user_data(self, server, u_data, member, curdate):
         # pprint.pprint(str(u_data).encode('utf-8'))
         # - UPDATE CURRENT STATE
         ###############################################################################################
-        status = data['cookies']['status']
+        status = u_data['cookies']['status']
         if str(status['active']['active']) == 'True':
-            if data['cookies']['give']['cycle'] == 0 or data['cookies']['get']['cycle'] == 0 or \
+            if u_data['cookies']['give']['cycle'] == 0 or u_data['cookies']['get']['cycle'] == 0 or \
                     member.status is discord.Status.offline:
                 #print('active/' + str(member.status))
                 status['active']['active'] = False
                 status['inactive']['active'] = True
                 status['inactive']['date'] = curdate.strftime('%Y-%m-%d %H')
         if str(status['inactive']['active']) == 'True':
-            if data['cookies']['give']['cycle'] > 0 or data['cookies']['get']['cycle'] > 0 or \
+            if u_data['cookies']['give']['cycle'] > 0 or u_data['cookies']['get']['cycle'] > 0 or \
                     member.status is not discord.Status.offline:
                 #print('inactive/' + str(member.status))
                 status['inactive']['active'] = False
@@ -145,47 +150,58 @@ class cookie(object):
                 if d.days >= 28 and not status['frozen']['active'] == 'True':
                     status['frozen']['active'] = True
 
-        data['status'] = status
+        if str(status['cookieOverload']['active']) == 'True':
+            if status['cookieOverload']['penalty'] == 0:
+                status['cookieOverload']['active'] = False
+            else:
+                status['cookieOverload']['penalty'] = status['cookieOverload']['penalty'] - 0.1
+        if u_data['cookies']['give']['cycle'] > server['cookies']['analytics']['cookieChargeOptimal']:
+            status['cookieOverload']['active'] = True
+            status['cookieOverload']['date'] = curdate.strftime('%Y-%m-%d %H')
+            status['cookieOverload']['penalty'] = server['cookies']['analytics']['cookieChargeMax'] - \
+                u_data['cookies']['give']['cycle']
+
+        u_data['status'] = status
         ################################################################################################
 
         # - UPDATE CYCLES
         #########################################################################
         # print('active: ' + str(status['active']['active']))
         if status['active']['active']:
-            data['cookies']['active_cycles'][0] += 1
-            if data['cookies']['active_cycles'][0] > 672:
-                data['cookies']['active_cycles'] = [0, data['cookies']['active_cycles'][1] + 1]
+            u_data['cookies']['active_cycles'][0] += 1
+            if u_data['cookies']['active_cycles'][0] > 672:
+                u_data['cookies']['active_cycles'] = [0, u_data['cookies']['active_cycles'][1] + 1]
             # print('ac_c: ' + str(data['cookies']['active_cycles']))
         # print('inactive: ' + str(status['inactive']['active']))
         if status['inactive']['active']:
-            data['cookies']['inactive_cycles'][0] += 1
-            if data['cookies']['inactive_cycles'][0] > 672:
-                data['cookies']['inactive_cycles'] = [0, data['cookies']['inactive_cycles'][1] + 1]
+            u_data['cookies']['inactive_cycles'][0] += 1
+            if u_data['cookies']['inactive_cycles'][0] > 672:
+                u_data['cookies']['inactive_cycles'] = [0, u_data['cookies']['inactive_cycles'][1] + 1]
             # print('ic_c: ' + str(data['cookies']['inactive_cycles']))
         #########################################################################
 
         # - UPDATE GET/GIVE
         #############################################################################
-        data['cookies']['get']['total'] = data['cookies']['get']['total'] + data['cookies']['get']['cycle']
-        data['cookies']['get']['cycle'] = 0
-        div = data['cookies']['active_cycles'][0] + data['cookies']['inactive_cycles'][0] +\
-            672*(data['cookies']['active_cycles'][1] + data['cookies']['inactive_cycles'][1])
+        u_data['cookies']['get']['total'] = u_data['cookies']['get']['total'] + u_data['cookies']['get']['cycle']
+        u_data['cookies']['get']['cycle'] = 0
+        div = u_data['cookies']['active_cycles'][0] + u_data['cookies']['inactive_cycles'][0] +\
+            672*(u_data['cookies']['active_cycles'][1] + u_data['cookies']['inactive_cycles'][1])
         if div == 0 or div is None:
             div = 1
-        data['cookies']['get']['average'] = \
-            data['cookies']['get']['total'] / div
-        data['cookies']['give']['total'] = data['cookies']['give']['total'] + data['cookies']['give']['cycle']
-        data['cookies']['give']['cycle'] = 0
-        div = data['cookies']['active_cycles'][0] + data['cookies']['inactive_cycles'][0] + \
-            672*(data['cookies']['active_cycles'][1] + data['cookies']['inactive_cycles'][1])
+        u_data['cookies']['get']['average'] = \
+            u_data['cookies']['get']['total'] / div
+        u_data['cookies']['give']['total'] = u_data['cookies']['give']['total'] + u_data['cookies']['give']['cycle']
+        u_data['cookies']['give']['cycle'] = 0
+        div = u_data['cookies']['active_cycles'][0] + u_data['cookies']['inactive_cycles'][0] + \
+            672*(u_data['cookies']['active_cycles'][1] + u_data['cookies']['inactive_cycles'][1])
         if div == 0 or div is None:
             div = 1
-        data['cookies']['give']['average'] = data['cookies']['give']['total'] / div
+        u_data['cookies']['give']['average'] = u_data['cookies']['give']['total'] / div
         #############################################################################
 
-        return data
+        return u_data
 
-    def member_handle(self, members, data):
+    def member_handle(self, members, data, server):
         cookies_this_cycle = 0
         total_cookies = 0
         average_average = 0
@@ -199,7 +215,7 @@ class cookie(object):
             u_data = self.update_user(data.c.get_user_data(member), data)
             cookies_this_cycle += u_data['cookies']['get']['cycle']
 
-            u2_data = self.update_user_data(u_data, member, curdate)
+            u2_data = self.update_user_data(data[server], u_data, member, curdate)
             # print('updates: ' + str(u_data))
 
             total_cookies += u2_data['cookies']['get']['total']
@@ -233,7 +249,7 @@ class cookie(object):
             members = s.members
 
             total_cookies, average_average, \
-                total_active, total_inactive, cookies_this_cycle = self.member_handle(members, data)
+                total_active, total_inactive, cookies_this_cycle = self.member_handle(members, data, server)
 
             conf['analytics']['totalCookies'] = total_cookies
             conf['analytics']['cookiesThisCycle'] = cookies_this_cycle
@@ -255,8 +271,14 @@ class cookie(object):
             e = b/d
 
             conf['analytics']['cookieBaseMultiplier'] = e
-
-            #TODO: cookie charge max, cookie charge optimal
+            f = (a/10)
+            g = int(f) / 20
+            if g < 1:
+                h = 20 + np.ceil(e/100)
+            else:
+                h = (f / g) + np.ceil(e/100)
+            conf['analytics']['cookieChargeMax'] = h
+            conf['analytics']['cookieChargeOptimal'] = np.ceil(h*0.75)
 
     @asyncio.coroutine
     def reactor(self, client, reaction, user, data):
@@ -279,11 +301,19 @@ class cookie(object):
             u2 = msg.author
             if u1 != u2:
                 u_data = self.update_user(data.c.get_user_data(u1), data)
-                u_data['cookies']['give']['cycle'] += 1
-                data.c.set_user_data(u1, data=u_data)
-                u_data = self.update_user(data.c.get_user_data(u2), data)
-                u_data['cookies']['get']['cycle'] += 1
-                data.c.set_user_data(u2, data=u_data)
+                c = u_data['cookies']['give']['cycle']
+                p = u_data['cookies']['status']['cookieOverload']['penalty']
+                m = data.servers[msg.server.id].custom_data['cookies']['analytics']['cookieChargeMax']
+                if str(u_data['cookies']['status']['cookieOverload']['active']) == 'True':
+                    n = c + np.ceil(p)
+                else:
+                    n = c
+                if n < m:
+                    u_data['cookies']['give']['cycle'] += 1
+                    data.c.set_user_data(u1, data=u_data)
+                    u_data = self.update_user(data.c.get_user_data(u2), data)
+                    u_data['cookies']['get']['cycle'] += 1
+                    data.c.set_user_data(u2, data=u_data)
 
 
     @asyncio.coroutine
