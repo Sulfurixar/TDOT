@@ -279,6 +279,8 @@ class cookie(object):
                 h = (f / g) + np.ceil(e/100)
             conf['analytics']['cookieChargeMax'] = h
             conf['analytics']['cookieChargeOptimal'] = np.ceil(h*0.75)
+            data.servers[server].custom_data['cookies'] = conf
+            data.servers[server].update(client)
 
     @asyncio.coroutine
     def reactor(self, client, reaction, user, data):
