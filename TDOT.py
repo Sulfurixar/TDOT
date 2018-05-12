@@ -267,7 +267,7 @@ def ticker():
     while True:
         try:
             if c != 0:
-                t = 5.0  # 60.0 - datetime.datetime.now().minute
+                t = 60.0 - datetime.datetime.now().minute
                 yield from asyncio.sleep(float(t*60.0))
             else:
                 c = 1
