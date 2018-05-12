@@ -1,7 +1,6 @@
 import asyncio
 import discord
 import datetime
-import pprint
 import copy
 import numpy as np
 
@@ -28,7 +27,15 @@ class cookie(object):
             'show':
                 'Displays your cookies for 10 seconds.\n' +
                 'How to use this command: ``e!cookie show``\n' +
-                'For Example: ``e!cookie show`` - shows your cookies.'
+                'For Example: ``e!cookie show`` - shows your cookies.',
+            'give':
+                'Give cookies to people who deserve them!\n' +
+                'How to use this command: ``e!cookie give (user) (amount)``\n' +
+                'For Example: ``e!cookie give @Elisiya 10`` - gifts 10 cookies to @Elisiya.',
+            'setranks':
+                'Sets ranks given out by the cookie system.\n' +
+                'How to use this command: ``e!cookie setranks {"rank_id": ["role_name", "treshold_value"]}``\n' +
+                'For Example: ``e!cookie setranks {"1234567788": ["I am a role", "0.3"]}``'
         }
         self.userExample = {
             'active_cycles': [0, 0],  # [cycle, epoch]
@@ -69,7 +76,9 @@ class cookie(object):
                 "totalActiveCycles": 0,
                 "totalInactiveCycles": 0,
                 "cookieBaseMultiplier": 0,
-            }
+                "highestCookieCount": 0
+            },
+            "rankings": {}
         }
 
     # {
@@ -91,7 +100,10 @@ class cookie(object):
     #           "totalActiveCycles": 9001,
     #           "totalInactiveCycles": 9999999
     #       },
-    #       "previous_analytics":{}
+    #       "previous_analytics":{},
+    #       "rankings": {
+    #           "role_id": ['role_name', 90] / 90%, meaning from average to highest cookie count at 90% ((highest - average)*0.9)
+    #       }
     #   }
     # }
 
@@ -208,6 +220,7 @@ class cookie(object):
         total_active = 0
         total_inactive = 0
         curdate = datetime.datetime.now()
+        highest_cookie_count = 0
 
         for member in members:
             # - GET DATA
@@ -219,6 +232,8 @@ class cookie(object):
             # print('updates: ' + str(u_data))
 
             total_cookies += u2_data['cookies']['get']['total']
+            if u2_data['cookies']['get']['total'] > highest_cookie_count:
+                highest_cookie_count = u2_data['cookies']['get']['total']
             average_average += u2_data['cookies']['give']['average']
             total_active += u2_data['cookies']['active_cycles'][0] + 672 * u2_data['cookies']['active_cycles'][1]
             total_inactive += u2_data['cookies']['inactive_cycles'][0] + 672 * u2_data['cookies']['inactive_cycles'][1]
@@ -229,7 +244,45 @@ class cookie(object):
             data.c.set_user_data(member, data=u2_data)
             #######################################################
 
-        return total_cookies, average_average, total_active, total_inactive, cookies_this_cycle
+        return total_cookies, average_average, total_active, total_inactive, cookies_this_cycle, highest_cookie_count
+
+    @asyncio.coroutine
+    def rank_members(self, client, data, server, members):
+        conf = server.custom_data['cookies']
+        average = int(conf['analytics']['totalCookies']/len(members))
+        tresholder = conf['analytics']['highestCookieCount'] - average
+        ranks = conf['rankings']
+
+        for member in members:
+            u_data = self.update_user(data.c.get_user_data(member), data)
+            best_rank_value = None
+            best_rank = None
+            current_rank = None
+            for rank in ranks:
+                treshold = int(tresholder * float(ranks[rank][1]))
+                # print('({}:{}):{}: treshold({}), tresholder({}), average({})'.format(
+                #     member.name, str(u_data['cookies']['get']['total']), ranks[rank][0],
+                #     str(treshold), str(tresholder), str(average))
+                # )
+                if u_data['cookies']['get']['total'] >= treshold:
+                    if best_rank_value is None or best_rank_value < float(ranks[rank][1]):
+                        best_rank_value = float(ranks[rank][1])
+                        best_rank = discord.utils.find(lambda m: m.id == rank, server.serve.roles)
+                role = discord.utils.find(lambda m: m.id == rank, server.serve.roles)
+                if role in member.roles:
+                    current_rank = role
+                    if best_rank_value is not None and float(ranks[rank][1]) > best_rank_value:
+                        best_rank_value = float(ranks[rank][1])
+                        best_rank = role
+            if best_rank is not None:
+                give = True
+                if current_rank is not None:
+                    if current_rank == best_rank:
+                        give = False
+                    else:
+                        yield from client.remove_roles(member, current_rank)
+                if give:
+                    yield from client.add_roles(member, best_rank)
 
     @asyncio.coroutine
     def ticker(self, client, data):
@@ -248,8 +301,8 @@ class cookie(object):
                 yield from client.request_offline_members(s)
             members = s.members
 
-            total_cookies, average_average, \
-                total_active, total_inactive, cookies_this_cycle = self.member_handle(members, data, conf)
+            total_cookies, average_average, total_active, total_inactive, cookies_this_cycle, \
+                highest_cookie_count = self.member_handle(members, data, conf)
 
             conf['analytics']['totalCookies'] = total_cookies
             conf['analytics']['cookiesThisCycle'] = cookies_this_cycle
@@ -263,6 +316,8 @@ class cookie(object):
             conf['analytics']['cookieAveragePerCycle'] = total_cookies / div
             conf['analytics']['totalActiveCycles'] = total_active
             conf['analytics']['totalInactiveCycles'] = total_inactive
+
+            conf['analytics']['highestCookieCount'] = highest_cookie_count
 
             a = data.servers[server].serve.member_count
             c = np.log(a)/np.log((total_cookies**0.25) + 2)
@@ -280,7 +335,31 @@ class cookie(object):
             conf['analytics']['cookieChargeMax'] = h
             conf['analytics']['cookieChargeOptimal'] = np.ceil(h*0.75)
             data.servers[server].custom_data['cookies'] = conf
+
+            yield from self.rank_members(client, data, data.servers[server], members)
+
             data.servers[server].update(client)
+
+    def give_cookie(self, data, msg, u1, u2, amount):
+        if u1 != u2:
+            u_data1 = self.update_user(data.c.get_user_data(u1), data)
+            c = u_data1['cookies']['give']['cycle']
+            p = u_data1['cookies']['status']['cookieOverload']['penalty']
+            m = data.servers[msg.server.id].custom_data['cookies']['analytics']['cookieChargeMax']
+            if str(u_data1['cookies']['status']['cookieOverload']['active']) == 'True':
+                n = c + np.ceil(p)
+            else:
+                n = c
+            if n < m:
+                if amount > m:
+                    amount = m
+                u_data1['cookies']['give']['cycle'] += amount
+                data.c.set_user_data(u1, data=u_data1)
+                u_data2 = self.update_user(data.c.get_user_data(u2), data)
+                u_data2['cookies']['get']['cycle'] += amount
+                data.c.set_user_data(u2, data=u_data2)
+                return u_data1, u_data2, True
+            return u_data1, None, False
 
     @asyncio.coroutine
     def reactor(self, client, reaction, user, data):
@@ -301,21 +380,7 @@ class cookie(object):
         if react:
             u1 = user
             u2 = msg.author
-            if u1 != u2:
-                u_data = self.update_user(data.c.get_user_data(u1), data)
-                c = u_data['cookies']['give']['cycle']
-                p = u_data['cookies']['status']['cookieOverload']['penalty']
-                m = data.servers[msg.server.id].custom_data['cookies']['analytics']['cookieChargeMax']
-                if str(u_data['cookies']['status']['cookieOverload']['active']) == 'True':
-                    n = c + np.ceil(p)
-                else:
-                    n = c
-                if n < m:
-                    u_data['cookies']['give']['cycle'] += 1
-                    data.c.set_user_data(u1, data=u_data)
-                    u_data = self.update_user(data.c.get_user_data(u2), data)
-                    u_data['cookies']['get']['cycle'] += 1
-                    data.c.set_user_data(u2, data=u_data)
+            self.give_cookie(data, msg, u1, u2, 1)
 
 
     @asyncio.coroutine
@@ -400,17 +465,122 @@ class cookie(object):
                 ########################################################
                 if arg.lower() == 'show':
                     u_data = self.update_user(data.c.get_user_data(msg.author), data)
+                    print(u_data['cookies'])
                     nmsg = yield from client.send_message(
                         msg.channel,
                         '',
                         embed=data.embedder([[
-                            "You currently have:",
+                            "You have received:",
                             str(u_data['cookies']['get']['total']) + ' ' +
+                            data.servers[msg.server.id].custom_data['cookie']['default']
+                            ],
+                            [
+                            '\nPending cookies:',
+                            str(u_data['cookies']['get']['cycle']) +
                             data.servers[msg.server.id].custom_data['cookie']['default']
                         ]])
                     )
                     yield from asyncio.sleep(10)
                     yield from client.delete_message(nmsg)
+                ##########################################################################
+                if arg.lower() == 'give':
+                    skip = len(args) - 1
+                    user = None
+                    if len(args) >= argpos + 1:
+                        name = args[argpos + 1]
+                        # print(name)
+                        if '@' in name:
+                            name = name[2:len(name) - 1]
+                            if name[0] == '!':
+                                name = name[1:]
+                            f_user = msg.server.get_member(name)
+                        else:
+                            f_user = discord.utils.find(lambda m: m.display_name == name[1:], msg.server.members)
+                        if user is None:
+                            f_user = discord.utils.find(lambda m: m.id == name, msg.server.members)
+                        if f_user is None:
+                            results.append([
+                                '',
+                                data.embedder(
+                                    [['**Error:**', 'Specified user: ``' + name + '`` could not be found.']]
+                                ),
+                                msg.channel
+                            ])
+                        else:
+                            user = f_user
+                    if user is not None:
+                        amount = 1
+                        if len(args) > argpos + 2:
+                            try:
+                                amount = int(args[argpos + 2])
+                                # print(amount)
+                            except:
+                                results.append([
+                                    '',
+                                    data.embedder(
+                                        [[
+                                            'Error:',
+                                            'Specified amount of cookies (' +
+                                            args[argpos + 2] + ') is not in a valid format.'
+                                        ]]
+                                    ),
+                                    msg.channel
+                                ])
+                        u2 = user
+                        u1 = msg.author
+                        u_data1, u_data2, success = self.give_cookie(data, msg, u1, u2, amount)
+                        print(u_data2)
+                        if success:
+                            nmsg = yield from client.send_message(
+                                msg.channel,
+                                '',
+                                embed=data.embedder([[
+                                    "You have given:",
+                                    str(amount) + ' ' +
+                                    data.servers[msg.server.id].custom_data['cookie']['default']
+                                ]])
+                            )
+                            yield from asyncio.sleep(10)
+                            yield from client.delete_message(nmsg)
+                #############################################################################
+                if arg.lower() == 'setranks':
+                    skip = len(args)
+                    if not (msg.author.id == msg.server.owner.id or msg.author.id == data.id):
+                        results.append([
+                            '',
+                            data.embedder(
+                                [[
+                                    '**Error:**',
+                                    'Insufficient permissions: You need to be the owner of ``' + msg.server.name +
+                                    "`` or owner of this Bot to use this command."
+                                ]],
+                                colour=data.embed_error
+                            ),
+                            msg.channel
+                        ])
+                    else:
+                        n_args = args[argpos + 1:]
+                        emb, res = data.json(n_args, msg)
+                        if emb is not None:
+                            if cookie in data.servers[msg.server.id].custom_data:
+                                conf = data.servers[msg.server.id].custom_data['cookies']
+                            else:
+                                data.servers[msg.server.id].custom_data['cookies'] = {}
+                                conf = data.servers[msg.server.id].custom_data['cookies']
+                            conf['rankings'] = emb
+                            data.servers[msg.server.id].update(client)
+                            m = ''
+                            for rank in conf['rankings']:
+                                m += conf['rankings'][rank][0] + ':' + \
+                                     conf['rankings'][rank][1] + ':' + str(rank) + '\n'
+                            results.append([
+                                '',
+                                data.embedder([['**Set rankings to:**', m]]),
+                                msg.channel
+                            ])
+                        else:
+                            for r in res:
+                                results.append(r)
                 #############################################################################
                 argpos += 1
             yield from data.messager(msg, results)
