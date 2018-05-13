@@ -285,10 +285,18 @@ class cookie(object):
                     str(treshold), str(tresholder), str(average))
                 )
             except:
-                print('({}:{}):{}: treshold({}), tresholder({}), average({})'.format(
-                    member.id, str(u_data['cookies']['get']['total']), best_rank.name,
-                    str(treshold), str(tresholder), str(average))
-                )
+                try:
+                    print(member.name)
+                except:
+                    print(member.id)
+                print(str(u_data['cookies']['get']['total']))
+                try:
+                    print(best_rank.name)
+                except:
+                    print(best_rank)
+                print(str(treshold))
+                print(str(tresholder))
+                print(str(average))
 
     @asyncio.coroutine
     def ticker(self, client, data):
