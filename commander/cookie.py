@@ -279,8 +279,14 @@ class cookie(object):
                         yield from client.remove_roles(member, current_rank)
                 if give:
                     yield from client.add_roles(member, best_rank)
+            try:
                 print('({}:{}):{}: treshold({}), tresholder({}), average({})'.format(
                     member.name, str(u_data['cookies']['get']['total']), best_rank.name,
+                    str(treshold), str(tresholder), str(average))
+                )
+            except:
+                print('({}:{}):{}: treshold({}), tresholder({}), average({})'.format(
+                    member.id, str(u_data['cookies']['get']['total']), best_rank.name,
                     str(treshold), str(tresholder), str(average))
                 )
 
