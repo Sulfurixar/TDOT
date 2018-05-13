@@ -260,10 +260,6 @@ class cookie(object):
             current_rank = None
             for rank in ranks:
                 treshold = int(tresholder * float(ranks[rank][1]))
-                # print('({}:{}):{}: treshold({}), tresholder({}), average({})'.format(
-                #     member.name, str(u_data['cookies']['get']['total']), ranks[rank][0],
-                #     str(treshold), str(tresholder), str(average))
-                # )
                 if u_data['cookies']['get']['total'] >= treshold:
                     if best_rank_value is None or best_rank_value < float(ranks[rank][1]):
                         best_rank_value = float(ranks[rank][1])
@@ -283,6 +279,10 @@ class cookie(object):
                         yield from client.remove_roles(member, current_rank)
                 if give:
                     yield from client.add_roles(member, best_rank)
+                print('({}:{}):{}: treshold({}), tresholder({}), average({})'.format(
+                    member.name, str(u_data['cookies']['get']['total']), best_rank.name,
+                    str(treshold), str(tresholder), str(average))
+                )
 
     @asyncio.coroutine
     def ticker(self, client, data):
