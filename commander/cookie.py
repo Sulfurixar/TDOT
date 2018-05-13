@@ -280,9 +280,8 @@ class cookie(object):
                 if give:
                     yield from client.add_roles(member, best_rank)
             try:
-                print('({}:{}):{}: treshold({}), tresholder({}), average({})'.format(
-                    member.name, str(u_data['cookies']['get']['total']), best_rank.name,
-                    str(treshold), str(tresholder), str(average))
+                print('({}:{}):{}: tresholder({}), average({})'.format(
+                    member.name, str(u_data['cookies']['get']['total']), best_rank.name, str(tresholder), str(average))
                 )
             except:
                 try:
@@ -294,7 +293,6 @@ class cookie(object):
                     print(best_rank.name)
                 except:
                     print(best_rank)
-                print(str(treshold))
                 print(str(tresholder))
                 print(str(average))
 
