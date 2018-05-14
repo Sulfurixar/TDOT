@@ -294,7 +294,7 @@ class cookie(object):
 
         for rank in ranks:
             role = discord.utils.find(lambda m: m.id == rank, server.serve.roles)
-            print(role)
+            # print(role)
             treshold = self.get_treshold(ranks[rank], n_distr)
             if pRank[0][1] is None or pRank[0][1] > ranks[rank]:
                 pRank[0][1] = ranks[rank]
@@ -302,6 +302,9 @@ class cookie(object):
             if role in member.roles:
                 pRank[1][1] = ranks[rank]
                 pRank[1][0] = role
+                if pRank[2][1] is None or pRank[2][1] < ranks[rank]:
+                    pRank[2][1] = pRank[1][1]
+                    pRank[2][0] = pRank[1][0]
             if pRank[2][1] is None or pRank[2][1] < ranks[rank]:
                 if u_data['cookies']['get']['total'] >= treshold:
                     pRank[2][1] = ranks[rank]
