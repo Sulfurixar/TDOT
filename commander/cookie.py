@@ -3,9 +3,6 @@ import discord
 import datetime
 import copy
 import numpy as np
-import codecs
-import sys
-
 
 class cookie(object):
 
@@ -323,8 +320,6 @@ class cookie(object):
 
     @asyncio.coroutine
     def rank_members(self, client, data, server, conf, members):
-        UTF8Writer = codecs.getwriter('utf8')
-        sys.stdout = UTF8Writer(sys.stdout)
         average = int(conf['analytics']['average'])
         maximum = conf['analytics']['highestCookieCount'] - average
         ranks = copy.deepcopy(conf['rankings'])
@@ -345,11 +340,20 @@ class cookie(object):
                 if pRank[1][1] is not None:
                     if pRank[1][1] < pRank[2][1]:
                         yield from client.remove_roles(member, pRank[1][0])
-                        print(member.name + '(removed_role):' + pRank[1][0].name)
+                        try:
+                            print(member.name + '(removed_role):' + pRank[1][0].name)
+                        except:
+                            print(member.id + '(removed_role):' + pRank[1][0].name)
                 yield from client.add_roles(member, pRank[2][0])
-                print(member.name + '(added_role):' + pRank[2][0].name)
+                try:
+                    print(member.name + '(added_role):' + pRank[2][0].name)
+                except:
+                    print(member.id + '(added_role):' + pRank[2][0].name)
             else:
-                print(member.name + ': ' + pRank[1][0].name + '/' + pRank[2][0].name)
+                try:
+                    print(member.name + ': ' + pRank[1][0].name + '/' + pRank[2][0].name)
+                except:
+                    print(member.id + ': ' + pRank[1][0].name + '/' + pRank[2][0].name)
                 pass
 
     @asyncio.coroutine
