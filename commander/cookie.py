@@ -76,7 +76,9 @@ class cookie(object):
                 "totalActiveCycles": 0,
                 "totalInactiveCycles": 0,
                 "cookieBaseMultiplier": 0,
-                "highestCookieCount": 0
+                "highestCookieCount": 0,
+                "average": 0,
+                "upperDistribution": {}
             },
             "rankings": {}
         }
@@ -98,11 +100,17 @@ class cookie(object):
     #           "cookieChargeMax": 100,
     #           "cookieChargeOptimal": 25,
     #           "totalActiveCycles": 9001,
-    #           "totalInactiveCycles": 9999999
+    #           "totalInactiveCycles": 9999999,
+    #           "average": 9,
+    #           "upperDistribution": {
+    #               0.1: 3,  /how many cookies a percentage of people have
+    #               0.2: 4,
+    #               0.5: 10
+    #           }
     #       },
     #       "previous_analytics":{},
     #       "rankings": {
-    #           "role_id": ['role_name', 90] / 90%, meaning from average to highest cookie count at 90% ((highest - average)*0.9)
+    #           "role_id": ["role_name", "0.9"],
     #       }
     #   }
     # }
@@ -221,6 +229,7 @@ class cookie(object):
         total_inactive = 0
         curdate = datetime.datetime.now()
         highest_cookie_count = 0
+        upper_distribution = {}
 
         for member in members:
             # - GET DATA
@@ -232,6 +241,11 @@ class cookie(object):
             # print('updates: ' + str(u_data))
 
             total_cookies += u2_data['cookies']['get']['total']
+            if u2_data['cookies']['get']['total'] not in upper_distribution:
+                upper_distribution[u2_data['cookies']['get']['total']] = 1
+            else:
+                upper_distribution[u2_data['cookies']['get']['total']] += 1
+
             if u2_data['cookies']['get']['total'] > highest_cookie_count:
                 highest_cookie_count = u2_data['cookies']['get']['total']
             average_average += u2_data['cookies']['give']['average']
@@ -244,57 +258,95 @@ class cookie(object):
             data.c.set_user_data(member, data=u2_data)
             #######################################################
 
-        return total_cookies, average_average, total_active, total_inactive, cookies_this_cycle, highest_cookie_count
+        # print(upper_distribution)
+
+        return total_cookies, average_average, total_active, total_inactive, cookies_this_cycle, \
+               highest_cookie_count, upper_distribution
+
+    def get_distributions(self, distr, average, maximum):
+        n_distr = {}  # cookie_amount: [people_count, percentage_from_total]
+        distribution_total_people = 0
+
+        for i in distr:
+            if average <= i <= maximum:
+                n_distr[i] = [distr[i]]
+                distribution_total_people += distr[i]
+
+        for i in n_distr:
+            n_distr[i].append(n_distr[i][0] / distribution_total_people)
+
+        return n_distr
+
+    def get_treshold(self, value, distr):
+        # print('running')
+        percentage = 0
+        p = None
+        for entry in distr:
+            percentage += distr[entry][1]
+            if float(value[1]) < percentage:
+                p = entry
+                break
+        # print(p)
+        return p
+
+    def get_rank(self, server, n_distr, member, u_data, ranks):
+        pRank = [[None, None], [None, None], [None, None], False]  # lowest_rank[role, value], curent_rank[role, value],
+        # best_available_rank[role, value], update_role
+
+        for rank in ranks:
+            role = discord.utils.find(lambda m: m.id == rank, server.serve.roles)
+            print(role)
+            treshold = self.get_treshold(ranks[rank], n_distr)
+            if pRank[0][1] is None or pRank[0][1] > ranks[rank]:
+                pRank[0][1] = ranks[rank]
+                pRank[0][0] = role
+            if role in member.roles:
+                pRank[1][1] = ranks[rank]
+                pRank[1][0] = role
+            if pRank[2][1] is None or pRank[2][1] < ranks[rank]:
+                if u_data['cookies']['get']['total'] >= treshold:
+                    pRank[2][1] = ranks[rank]
+                    pRank[2][0] = role
+
+            if pRank[1][0] is None and pRank[2][0] is None:
+                pRank[2][0] = pRank[0][0]
+                pRank[2][1] = pRank[0][1]
+                pRank[3] = True
+            elif pRank[1][1] is not None and pRank[2][0] is None:
+                pRank[2][1] = pRank[1][1]
+                pRank[2][0] = pRank[1][0]
+                pRank[3] = True
+
+        return pRank
 
     @asyncio.coroutine
-    def rank_members(self, client, data, server, members):
-        conf = server.custom_data['cookies']
-        average = int(conf['analytics']['totalCookies']/len(members))
-        tresholder = conf['analytics']['highestCookieCount'] - average
-        ranks = conf['rankings']
+    def rank_members(self, client, data, server, conf, members):
+        average = int(conf['analytics']['average'])
+        maximum = conf['analytics']['highestCookieCount'] - average
+        ranks = copy.deepcopy(conf['rankings'])
+        distr = conf['analytics']['upperDistribution']
+        n_distr = self.get_distributions(distr, average, maximum)
 
         for member in members:
             u_data = self.update_user(data.c.get_user_data(member), data)
-            best_rank_value = None
-            best_rank = None
-            current_rank = None
-            for rank in ranks:
-                treshold = int(tresholder * float(ranks[rank][1]))
-                if u_data['cookies']['get']['total'] >= treshold:
-                    if best_rank_value is None or best_rank_value < float(ranks[rank][1]):
-                        best_rank_value = float(ranks[rank][1])
-                        best_rank = discord.utils.find(lambda m: m.id == rank, server.serve.roles)
-                role = discord.utils.find(lambda m: m.id == rank, server.serve.roles)
-                if role in member.roles:
-                    current_rank = role
-                    if best_rank_value is not None and float(ranks[rank][1]) > best_rank_value:
-                        best_rank_value = float(ranks[rank][1])
-                        best_rank = role
-            if best_rank is not None:
-                give = True
-                if current_rank is not None:
-                    if current_rank == best_rank:
-                        give = False
-                    else:
-                        yield from client.remove_roles(member, current_rank)
-                if give:
-                    yield from client.add_roles(member, best_rank)
-            try:
-                print('({}:{}):{}: tresholder({}), average({})'.format(
-                    member.name, str(u_data['cookies']['get']['total']), best_rank.name, str(tresholder), str(average))
-                )
-            except:
-                try:
-                    print(member.name)
-                except:
-                    print(member.id)
-                print(str(u_data['cookies']['get']['total']))
-                try:
-                    print(best_rank.name)
-                except:
-                    print(best_rank)
-                print(str(tresholder))
-                print(str(average))
+
+            # print(member.name)
+            if len(ranks) == 0:
+                continue
+
+            # print(member.name)
+            pRank = self.get_rank(server, n_distr, member, u_data, ranks)
+            # print(pRank)
+            if pRank[3]:
+                if pRank[1][1] is not None:
+                    if pRank[1][1] < pRank[2][1]:
+                        yield from client.remove_roles(member, pRank[1][0])
+                        print(member.name + '(removed_role):' + pRank[1][0].name)
+                yield from client.add_roles(member, pRank[2][0])
+                print(member.name + '(added_role):' + pRank[2][0].name)
+            else:
+                print(member.name + ': ' + pRank[1][0].name + '/' + pRank[2][0].name)
+                pass
 
     @asyncio.coroutine
     def ticker(self, client, data):
@@ -314,9 +366,10 @@ class cookie(object):
             members = s.members
 
             total_cookies, average_average, total_active, total_inactive, cookies_this_cycle, \
-                highest_cookie_count = self.member_handle(members, data, conf)
+                highest_cookie_count, upper_distribution = self.member_handle(members, data, conf)
 
             conf['analytics']['totalCookies'] = total_cookies
+            conf['analytics']['average'] = total_cookies / len(members)
             conf['analytics']['cookiesThisCycle'] = cookies_this_cycle
             conf['analytics']['cycleCount'][0] += 1
             if conf['analytics']['cycleCount'][0] > 672:
@@ -330,6 +383,7 @@ class cookie(object):
             conf['analytics']['totalInactiveCycles'] = total_inactive
 
             conf['analytics']['highestCookieCount'] = highest_cookie_count
+            conf['analytics']['upperDistribution'] = upper_distribution
 
             a = data.servers[server].serve.member_count
             c = np.log(a)/np.log((total_cookies**0.25) + 2)
@@ -348,9 +402,9 @@ class cookie(object):
             conf['analytics']['cookieChargeOptimal'] = np.ceil(h*0.75)
             data.servers[server].custom_data['cookies'] = conf
 
-            yield from self.rank_members(client, data, data.servers[server], members)
-
             data.servers[server].update(client)
+
+            yield from self.rank_members(client, data, data.servers[server], conf, members)
 
     def give_cookie(self, data, msg, u1, u2, amount):
         if u1 != u2:
