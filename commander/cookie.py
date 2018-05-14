@@ -3,6 +3,8 @@ import discord
 import datetime
 import copy
 import numpy as np
+import codecs
+import sys
 
 
 class cookie(object):
@@ -321,6 +323,8 @@ class cookie(object):
 
     @asyncio.coroutine
     def rank_members(self, client, data, server, conf, members):
+        UTF8Writer = codecs.getwriter('utf8')
+        sys.stdout = UTF8Writer(sys.stdout)
         average = int(conf['analytics']['average'])
         maximum = conf['analytics']['highestCookieCount'] - average
         ranks = copy.deepcopy(conf['rankings'])
