@@ -49,7 +49,7 @@ class suggestion(object):
                 else:
                     if arg.lower() not in self.commands:
                         skip = len(args[argpos:])
-                        if 'suggestions' not in data.servers[msg.Server.id].custom_data:
+                        if 'suggestions' not in data.servers[msg.server.id].custom_data:
                             results.append([
                                 '',
                                 data.embedder(
@@ -63,7 +63,7 @@ class suggestion(object):
                                 msg.channel
                             ])
                         else:
-                            if 'channel' not in data.servers[msg.Server.id].custom_data['suggestions']:
+                            if 'channel' not in data.servers[msg.server.id].custom_data['suggestions']:
                                 results.append([
                                     '',
                                     data.embedder(
@@ -78,8 +78,8 @@ class suggestion(object):
                                 ])
                             else:
                                 channel = discord.utils.find(
-                                    lambda m: m.id == data.servers[msg.Server.id].custom_data['suggestions']['channel'],
-                                    msg.Server.channels
+                                    lambda m: m.id == data.servers[msg.server.id].custom_data['suggestions']['channel'],
+                                    msg.server.channels
                                 )
                                 if channel is None:
                                     results.append([
@@ -122,22 +122,22 @@ class suggestion(object):
                     ##########################
                     if arg.lower() == 'channel':
                         skip = 1
-                        if not (msg.author.id == msg.Server.owner.id or msg.author.id == data.id):
+                        if not (msg.author.id == msg.server.owner.id or msg.author.id == data.id):
                             results.append([
                                 '',
                                 data.embedder(
                                     [[
                                         '**Error:**',
-                                        'Insufficient permissions: You need to be the owner of ``' + msg.Server.name +
+                                        'Insufficient permissions: You need to be the owner of ``' + msg.server.name +
                                         "`` or owner of this Bot to use this command."
                                     ]],
                                     colour=data.embed_error),
                                 msg.channel
                             ])
                         else:
-                            channel = discord.utils.find(lambda m: m.name == args[argpos + 1], msg.Server.channels)
+                            channel = discord.utils.find(lambda m: m.name == args[argpos + 1], msg.server.channels)
                             if channel is None:
-                                channel = discord.utils.find(lambda m: m.id == args[argpos + 1], msg.Server.channels)
+                                channel = discord.utils.find(lambda m: m.id == args[argpos + 1], msg.server.channels)
                             if channel is None:
                                 results.append([
                                     '',
@@ -148,12 +148,12 @@ class suggestion(object):
                                     msg.channel
                                 ])
                             else:
-                                if channel.Server.id not in data.servers:
-                                    s = Server(client, msg.Server.id)
-                                    data.Server.append({msg.Server.id: s})
-                                    data.Server[msg.Server.id].update(client)
-                                data.servers[msg.Server.id].custom_data['suggestions'] = {'channel': channel.id}
-                                data.servers[msg.Server.id].update(client)
+                                if channel.server.id not in data.servers:
+                                    s = Server(client, msg.server.id)
+                                    data.servers.append({msg.server.id: s})
+                                    data.servers[msg.server.id].update(client)
+                                data.servers[msg.server.id].custom_data['suggestions'] = {'channel': channel.id}
+                                data.servers[msg.server.id].update(client)
                                 results.append([
                                     '',
                                     data.embedder([[
@@ -180,7 +180,7 @@ class suggestion(object):
                                msg.channel
                             ])
                         else:
-                            if 'channel' not in data.servers[msg.Server.id].custom_data['suggestions']:
+                            if 'channel' not in data.servers[msg.server.id].custom_data['suggestions']:
                                 results.append([
                                     '',
                                     data.embedder(
@@ -195,7 +195,7 @@ class suggestion(object):
                                 ])
                             else:
                                 channel = discord.utils.find(
-                                    lambda m: m.id == data.servers[msg.Server.id].custom_data['suggestions']['channel'],
+                                    lambda m: m.id == data.servers[msg.server.id].custom_data['suggestions']['channel'],
                                     msg.Server.channels
                                 )
                                 if channel is None:
