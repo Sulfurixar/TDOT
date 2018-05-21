@@ -196,7 +196,7 @@ class suggestion(object):
                             else:
                                 channel = discord.utils.find(
                                     lambda m: m.id == data.servers[msg.server.id].custom_data['suggestions']['channel'],
-                                    msg.Server.channels
+                                    msg.server.channels
                                 )
                                 if channel is None:
                                     results.append([
