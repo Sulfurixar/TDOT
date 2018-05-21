@@ -177,9 +177,9 @@ class get(object):
                             results.append([
                                 '',
                                 data.embedder([
-                                    ["**Server Permissions:**", res],
-                                    ["**Custom Data**:", str(s.custom_data)],
-                                    ["User Welcoming Message:", "``" + str(s.welcome_message) + "``"]
+                                    ["**Server Permissions:**", res + ' -'],
+                                    ["**Custom Data**:", str(s.custom_data) + ' -'],
+                                    ["User Welcoming Message:", "``" + str(s.welcome_message) + "`` -"]
                                 ]),
                                 msg.channel
                             ])

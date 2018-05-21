@@ -166,7 +166,7 @@ class suggestion(object):
                     #################
                     if arg.lower() == 'make':
                         skip = len(args[argpos + 1:])
-                        if 'suggestions' not in data.servers[msg.Server.id].custom_data:
+                        if 'suggestions' not in data.servers[msg.server.id].custom_data:
                             results.append([
                                '',
                                data.embedder(
