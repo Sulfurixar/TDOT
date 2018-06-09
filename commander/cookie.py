@@ -31,6 +31,10 @@ class cookie(object):
                 'Give cookies to people who deserve them!\n' +
                 'How to use this command: ``e!cookie give (user) (amount)``\n' +
                 'For Example: ``e!cookie give @Elisiya 10`` - gifts 10 cookies to @Elisiya.',
+            'eventgive':
+                'Give cookies to people who deserve them!\n' +
+                'How to use this command: ``e!cookie eventgive (user) (amount)``\n' +
+                'For Example: ``e!cookie eventgive @Elisiya 10`` - gifts 10 cookies to @Elisiya.',
             'setranks':
                 'Sets ranks given out by the cookie system.\n' +
                 'How to use this command: ``e!cookie setranks {"rank_id": ["role_name", "treshold_value"]}``\n' +
@@ -628,63 +632,77 @@ class cookie(object):
                 #############################################################################
                 if arg.lower() == 'eventgive':
                     skip = len(args) - 1
-                    user = None
-                    if len(args) >= argpos + 1:
-                        name = args[argpos + 1]
-                        # print(name)
-                        if '@' in name:
-                            name = name[2:len(name) - 1]
-                            if name[0] == '!':
-                                name = name[1:]
-                            f_user = msg.server.get_member(name)
-                        else:
-                            f_user = discord.utils.find(lambda m: m.display_name == name[1:], msg.server.members)
-                        if user is None:
-                            f_user = discord.utils.find(lambda m: m.id == name, msg.server.members)
-                        if f_user is None:
-                            results.append([
-                                '',
-                                data.embedder(
-                                    [['**Error:**', 'Specified user: ``' + name + '`` could not be found.']]
-                                ),
-                                msg.channel
-                            ])
-                        else:
-                            user = f_user
-                    if user is not None:
-                        amount = 1
-                        if len(args) > argpos + 2:
-                            try:
-                                amount = int(args[argpos + 2])
-                                # print(amount)
-                            except:
+                    if not (msg.author.id == msg.Server.owner.id or msg.author.id == data.id):
+                        results.append([
+                            '',
+                            data.embedder(
+                                [[
+                                    '**Error:**',
+                                    'Insufficient permissions: You need to be the owner of ``' + msg.Server.name +
+                                    "`` or owner of this Bot to use this command."
+                                ]],
+                                colour=data.embed_error
+                            ),
+                            msg.channel
+                        ])
+                    else:
+                        user = None
+                        if len(args) >= argpos + 1:
+                            name = args[argpos + 1]
+                            # print(name)
+                            if '@' in name:
+                                name = name[2:len(name) - 1]
+                                if name[0] == '!':
+                                    name = name[1:]
+                                f_user = msg.server.get_member(name)
+                            else:
+                                f_user = discord.utils.find(lambda m: m.display_name == name[1:], msg.server.members)
+                            if user is None:
+                                f_user = discord.utils.find(lambda m: m.id == name, msg.server.members)
+                            if f_user is None:
                                 results.append([
                                     '',
                                     data.embedder(
-                                        [[
-                                            'Error:',
-                                            'Specified amount of cookies (' +
-                                            args[argpos + 2] + ') is not in a valid format.'
-                                        ]]
+                                        [['**Error:**', 'Specified user: ``' + name + '`` could not be found.']]
                                     ),
                                     msg.channel
                                 ])
-                        u2 = user
-                        u1 = msg.author
-                        u_data1, u_data2, success = self.give_cookie(data, msg, u1, u2, amount, overload=False)
-                        # print(u_data2)
-                        if success:
-                            nmsg = yield from client.send_message(
-                                msg.channel,
-                                '',
-                                embed=data.embedder([[
-                                    "You have given:",
-                                    str(amount) + ' ' +
-                                    data.servers[msg.server.id].custom_data['cookie']['default']
-                                ]])
-                            )
-                            yield from asyncio.sleep(10)
-                            yield from client.delete_message(nmsg)
+                            else:
+                                user = f_user
+                        if user is not None:
+                            amount = 1
+                            if len(args) > argpos + 2:
+                                try:
+                                    amount = int(args[argpos + 2])
+                                    # print(amount)
+                                except:
+                                    results.append([
+                                        '',
+                                        data.embedder(
+                                            [[
+                                                'Error:',
+                                                'Specified amount of cookies (' +
+                                                args[argpos + 2] + ') is not in a valid format.'
+                                            ]]
+                                        ),
+                                        msg.channel
+                                    ])
+                            u2 = user
+                            u1 = msg.author
+                            u_data1, u_data2, success = self.give_cookie(data, msg, u1, u2, amount, overload=False)
+                            # print(u_data2)
+                            if success:
+                                nmsg = yield from client.send_message(
+                                    msg.channel,
+                                    '',
+                                    embed=data.embedder([[
+                                        "You have given:",
+                                        str(amount) + ' ' +
+                                        data.servers[msg.server.id].custom_data['cookie']['default']
+                                    ]])
+                                )
+                                yield from asyncio.sleep(10)
+                                yield from client.delete_message(nmsg)
                 #############################################################################
                 if arg.lower() == 'setranks':
                     skip = len(args)
