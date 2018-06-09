@@ -320,10 +320,13 @@ class cookie(object):
                 pRank[2][1] = pRank[0][1]
                 pRank[3] = True
             elif pRank[1][0] is not None and pRank[2][0] is None:
-                if pRank[1][0] != pRank[2][0]:
-                    pRank[2][1] = pRank[1][1]
-                    pRank[2][0] = pRank[1][0]
-                    pRank[3] = True
+                pRank[2][1] = pRank[1][1]
+                pRank[2][0] = pRank[1][0]
+                pRank[3] = True
+            elif pRank[1][0] != pRank[2][0]:
+                pRank[2][1] = pRank[1][1]
+                pRank[2][0] = pRank[1][0]
+                pRank[3] = True
 
         if member.id == "209118707723665418":
             print(pRank)
