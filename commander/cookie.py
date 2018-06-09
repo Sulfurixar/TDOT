@@ -295,7 +295,8 @@ class cookie(object):
     def get_rank(self, server, n_distr, member, u_data, ranks):
         pRank = [[None, None], [None, None], [None, None], False]  # lowest_rank[role, value], curent_rank[role, value],
         # best_available_rank[role, value], update_role
-
+        if member.id == "209118707723665418":
+            print('British:')
         for rank in ranks:
             role = discord.utils.find(lambda m: m.id == rank, server.serve.roles)
             # print(role)
@@ -318,10 +319,14 @@ class cookie(object):
                 pRank[2][0] = pRank[0][0]
                 pRank[2][1] = pRank[0][1]
                 pRank[3] = True
-            elif pRank[1][1] is not None and pRank[2][0] is None:
-                pRank[2][1] = pRank[1][1]
-                pRank[2][0] = pRank[1][0]
-                pRank[3] = True
+            elif pRank[1][0] is not None and pRank[2][0] is None:
+                if pRank[1][0] != pRank[2][0]:
+                    pRank[2][1] = pRank[1][1]
+                    pRank[2][0] = pRank[1][0]
+                    pRank[3] = True
+                    
+        if member.id == "209118707723665418":
+            print(pRank)
 
         return pRank
 
