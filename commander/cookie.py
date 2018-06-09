@@ -606,7 +606,7 @@ class cookie(object):
                         u2 = user
                         u1 = msg.author
                         u_data1, u_data2, success = self.give_cookie(data, msg, u1, u2, amount)
-                        print(u_data2)
+                        # print(u_data2)
                         if success:
                             nmsg = yield from client.send_message(
                                 msg.channel,
