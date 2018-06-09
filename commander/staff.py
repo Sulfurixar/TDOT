@@ -68,7 +68,7 @@ class staff(object):
                     ##########################
                     if arg.lower() == 'channel':
                         skip = 1
-                        if not (msg.author.id == msg.Server.owner.id or msg.author.id == data.id):
+                        if not (msg.author.id == msg.server.owner.id or msg.author.id == data.id):
                             results.append([
                                 '',
                                 data.embedder(
@@ -95,17 +95,17 @@ class staff(object):
                                     msg.channel
                                 ])
                             else:
-                                if channel.Server.id not in data.servers:
-                                    s = Server(client, msg.Server.id)
-                                    data.Server.append({msg.Server.id: s})
-                                    data.Server[msg.Server.id].update(client)
-                                data.servers[msg.Server.id].custom_data['staff'] = {'channel': channel.id}
-                                data.servers[msg.Server.id].update(client)
+                                if channel.server.id not in data.servers:
+                                    s = Server(client, msg.server.id)
+                                    data.server.append({msg.server.id: s})
+                                    data.Server[msg.server.id].update(client)
+                                data.servers[msg.server.id].custom_data['staff'] = {'channel': channel.id}
+                                data.servers[msg.server.id].update(client)
                                 results.append([
                                     '',
                                     data.embedder([[
                                         "**Suggestion Channel:**",
-                                        "Set staff applications channel for this Server as ``" + channel.name + ":" +
+                                        "Set staff applications channel for this server as ``" + channel.name + ":" +
                                         channel.id + "``."
                                     ]]),
                                     msg.channel
@@ -113,13 +113,13 @@ class staff(object):
                     #################
                     if arg.lower() == 'apply':
                         skip = len(args[argpos + 1:])
-                        if 'staff' not in data.servers[msg.Server.id].custom_data:
+                        if 'staff' not in data.servers[msg.server.id].custom_data:
                             results.append([
                                '',
                                data.embedder(
                                     [[
                                         "**Error:**",
-                                        "The staff applications command has not yet been set up for this Server. " +
+                                        "The staff applications command has not yet been set up for this server. " +
                                         "Set a channel for staff applications' output via ``staff channel (channel)``."
                                     ]],
                                     colour=data.embed_error
@@ -127,7 +127,7 @@ class staff(object):
                                msg.channel
                             ])
                         else:
-                            if 'channel' not in data.servers[msg.Server.id].custom_data['suggestions']:
+                            if 'channel' not in data.servers[msg.server.id].custom_data['suggestions']:
                                 results.append([
                                     '',
                                     data.embedder(
@@ -142,7 +142,7 @@ class staff(object):
                                 ])
                             else:
                                 channel = discord.utils.find(
-                                    lambda m: m.id == data.servers[msg.Server.id].custom_data['staff']['channel'],
+                                    lambda m: m.id == data.servers[msg.server.id].custom_data['staff']['channel'],
                                     msg.Server.channels
                                 )
                                 if channel is None:
@@ -151,7 +151,7 @@ class staff(object):
                                         data.embedder(
                                             [[
                                                 "**Error:**",
-                                                "Couldn't find channel set in config in this Server, rerun " +
+                                                "Couldn't find channel set in config in this server, rerun " +
                                                 "``staff channel (channel)``."
                                             ]],
                                             colour=data.embed_error

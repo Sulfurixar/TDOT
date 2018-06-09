@@ -324,7 +324,7 @@ class cookie(object):
                     pRank[2][1] = pRank[1][1]
                     pRank[2][0] = pRank[1][0]
                     pRank[3] = True
-                    
+
         if member.id == "209118707723665418":
             print(pRank)
 
@@ -637,7 +637,7 @@ class cookie(object):
                 #############################################################################
                 if arg.lower() == 'eventgive':
                     skip = len(args) - 1
-                    if not (msg.author.id == msg.Server.owner.id or msg.author.id == data.id):
+                    if not (msg.author.id == msg.server.owner.id or msg.author.id == data.id):
                         results.append([
                             '',
                             data.embedder(
